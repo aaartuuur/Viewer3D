@@ -29,15 +29,20 @@ public class Vector3f implements Vector<Vector3f> {
         z += v.z;
     }
 
+    @Override
+    public void sub(Vector3f v) {
+
+    }
+
     public static Vector3f subtraction(final Vector3f v1, final Vector3f v2) {
         return new Vector3f(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
     }
 
     @Override
-    public void sub(final Vector3f v) {
-        x -= v.x;
-        y -= v.y;
-        z -= v.z;
+    public final void sub(Vector3f var1, Vector3f var2) {
+        this.x = var1.x - var2.x;
+        this.y = var1.y - var2.y;
+        this.z = var1.z - var2.z;
     }
 
     @Override
@@ -75,6 +80,10 @@ public class Vector3f implements Vector<Vector3f> {
         return (float) Math.sqrt(x * x + y * y + z * z);
     }
 
+    public static float lenghtTwoVectors(final Vector3f v1, final Vector3f v2){
+        return (float) Math.sqrt((v1.x-v2.x) * (v1.x-v2.x) + (v1.y-v2.y) * (v1.y-v2.y) + (v1.z-v2.z) * (v1.z-v2.z));
+    }
+
     @Override
     public Vector3f normal() {
         final float length = this.length();
@@ -84,8 +93,19 @@ public class Vector3f implements Vector<Vector3f> {
         return this.divide(length);
     }
 
+    public final void normalize() {
+        float var1 = (float)(1.0 / Math.sqrt((double)(this.x * this.x + this.y * this.y + this.z * this.z)));
+        this.x *= var1;
+        this.y *= var1;
+        this.z *= var1;
+    }
+
     public static float dotProduct(final Vector3f v1, final Vector3f v2) {
         return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+    }
+
+    public float dot(final Vector3f v){
+        return this.x * v.x + this.y * v.y + this.z * v.z;
     }
 
     public static Vector3f crossProduct(final Vector3f v1, final Vector3f v2) {
@@ -94,6 +114,14 @@ public class Vector3f implements Vector<Vector3f> {
         final float z = v1.x * v2.y - v1.y * v2.x;
         return new Vector3f(x, y, z);
     }// 0 сонапрв
+
+    public final void cross(Vector3f var1, Vector3f var2) {
+        float var3 = var1.y * var2.z - var1.z * var2.y;
+        float var4 = var2.x * var1.z - var2.z * var1.x;
+        this.z = var1.x * var2.y - var1.y * var2.x;
+        this.x = var3;
+        this.y = var4;
+    }
 
     @Override
     public boolean equals(final Vector3f other) {

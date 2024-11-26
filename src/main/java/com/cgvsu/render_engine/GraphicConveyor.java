@@ -1,5 +1,6 @@
 package com.cgvsu.render_engine;
 import javax.vecmath.*;
+import com.cgvsu.math.Vector3f;
 
 public class GraphicConveyor {
 
@@ -28,6 +29,7 @@ public class GraphicConveyor {
         resultX.normalize();
         resultY.normalize();
         resultZ.normalize();
+
 
         float[] matrix = new float[]{
                 resultX.x, resultY.x, resultZ.x, 0,

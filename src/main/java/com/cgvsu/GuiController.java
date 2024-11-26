@@ -15,7 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.IOException;
 import java.io.File;
-import javax.vecmath.Vector3f;
+import com.cgvsu.math.Vector3f;
 
 import javafx.scene.input.MouseEvent;
 import javafx.event.EventHandler;
@@ -25,18 +25,14 @@ import com.cgvsu.model.Model;
 import com.cgvsu.objreader.ObjReader;
 import com.cgvsu.render_engine.Camera;
 
-
-
 public class GuiController {
-
-    final private float TRANSLATION = 1F;
+    final private float TRANSLATION = 1.5F;
 
     @FXML
     AnchorPane anchorPane;
 
     @FXML
     private Canvas canvas;
-
 
     private Model mesh = null;
 
@@ -74,7 +70,33 @@ public class GuiController {
         timeline.getKeyFrames().add(frame);
         timeline.play();
 
-        addMouseHandlers();
+        // Добавляем обработчики событий мыши
+        canvas.setOnMousePressed(this::handleMousePressed);
+        canvas.setOnMouseDragged(this::handleMouseDragged);
+        canvas.setOnMouseReleased(this::handleMouseReleased);
+    }
+
+    private void handleMousePressed(MouseEvent event) {
+        lastMouseX = event.getSceneX();
+        lastMouseY = event.getSceneY();
+        isMousePressed = true;
+    }
+
+    private void handleMouseDragged(MouseEvent event) {
+        if (isMousePressed) {
+            double deltaX = event.getSceneX() - lastMouseX;
+            double deltaY = event.getSceneY() - lastMouseY;
+
+            // Изменяем направление камеры в зависимости от движения мыши
+            camera.rotate((float) deltaY * 0.1F, (float) deltaX * 0.1F);
+
+            lastMouseX = event.getSceneX();
+            lastMouseY = event.getSceneY();
+        }
+    }
+
+    private void handleMouseReleased(MouseEvent event) {
+        isMousePressed = false;
     }
 
     @FXML
@@ -98,82 +120,11 @@ public class GuiController {
 
         }
     }
-    private void addMouseHandlers() {
-        canvas.setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                lastMouseX = event.getSceneX();
-                lastMouseY = event.getSceneY();
-                isMousePressed = true;
-            }
-        });
-
-        canvas.setOnMouseReleased(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                isMousePressed = false;
-            }
-        });
-
-        canvas.setOnMouseDragged(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (isMousePressed) {
-                    double deltaX = event.getSceneX() - lastMouseX;
-                    double deltaY = event.getSceneY() - lastMouseY;
-
-                    updateCameraDirection(deltaX, deltaY);
-
-                    lastMouseX = event.getSceneX();
-                    lastMouseY = event.getSceneY();
-                }
-            }
-        });
-    }
-
-    private void updateCameraDirection(double deltaX, double deltaY) {
-        // Вычисление вектора направления камеры
-        Vector3f direction = new Vector3f();
-        direction.sub(camera.getTarget(), camera.getPosition());
-        direction.normalize();
-
-        // Вычисление вектора, перпендикулярного направлению камеры и вертикальной оси
-        Vector3f side = new Vector3f();
-        side.cross(direction, new Vector3f(0, 1, 0));
-        side.normalize();
-
-        // Вычисление вектора, перпендикулярного направлению камеры и вектору side
-        Vector3f up = new Vector3f();
-        up.cross(side, direction);
-        up.normalize();
-
-        // Обновление направления камеры на основе движения мыши
-        float yaw = (float) deltaX * 0.001f; // Угол поворота вокруг оси Y
-        float pitch = (float) deltaY * 0.001f; // Угол поворота вокруг оси X
-
-        // Поворот направления камеры вокруг оси Y
-        Vector3f newDirection = new Vector3f();
-        newDirection.x = (float) (direction.x * Math.cos(yaw) + side.x * Math.sin(yaw));
-        newDirection.y = (float) (direction.y * Math.cos(yaw) + side.y * Math.sin(yaw));
-        newDirection.z = (float) (direction.z * Math.cos(yaw) + side.z * Math.sin(yaw));
-
-        // Поворот направления камеры вокруг оси X
-        newDirection.x = (float) (newDirection.x * Math.cos(pitch) + up.x * Math.sin(pitch));
-        newDirection.y = (float) (newDirection.y * Math.cos(pitch) + up.y * Math.sin(pitch));
-        newDirection.z = (float) (newDirection.z * Math.cos(pitch) + up.z * Math.sin(pitch));
-
-        // Обновление цели камеры
-        camera.setTarget(
-                new Vector3f(camera.getPosition().x + newDirection.x,
-                        camera.getPosition().y + newDirection.y,
-                        camera.getPosition().z + newDirection.z));
-    }
-
 
     @FXML
     public void handleCameraForw(ActionEvent actionEvent) {
         Vector3f v = new Vector3f();
-        v.sub(camera.getTarget(), camera.getPosition());
+        v = Vector3f.subtraction(camera.getTarget(), camera.getPosition());
         v.normalize();
         camera.moveTarget(new Vector3f(v.x * TRANSLATION, v.y * TRANSLATION, v.z * TRANSLATION));
         camera.movePosition(new Vector3f(v.x * TRANSLATION, v.y * TRANSLATION, v.z * TRANSLATION));
@@ -182,7 +133,7 @@ public class GuiController {
     @FXML
     public void handleCameraBack(ActionEvent actionEvent) {
         Vector3f v = new Vector3f();
-        v.sub(camera.getTarget(), camera.getPosition());
+        v = Vector3f.subtraction(camera.getTarget(), camera.getPosition());
         v.normalize();
         camera.moveTarget(new Vector3f(-v.x * TRANSLATION, -v.y * TRANSLATION, -v.z * TRANSLATION));
         camera.movePosition(new Vector3f(-v.x * TRANSLATION, -v.y * TRANSLATION, -v.z * TRANSLATION));
@@ -191,24 +142,24 @@ public class GuiController {
     @FXML
     public void A(ActionEvent actionEvent) {
         Vector3f v = new Vector3f();
-        v.sub(camera.getTarget(), camera.getPosition());
+        v = Vector3f.subtraction(camera.getTarget(), camera.getPosition());
         v.normalize();
         Vector3f side = new Vector3f();
-        side.cross(v, new Vector3f(0, 1, 0));
+        side = Vector3f.crossProduct(v, new Vector3f(0, 1, 0));
         side.normalize();
-        camera.moveTarget(new Vector3f(side.x * TRANSLATION, side.y * TRANSLATION, side.z * TRANSLATION));
-        camera.movePosition(new Vector3f(side.x * TRANSLATION, side.y * TRANSLATION, side.z * TRANSLATION));
+        camera.moveTarget(new Vector3f(side.x * TRANSLATION/3, side.y * TRANSLATION/3, side.z * TRANSLATION/3));
+        camera.movePosition(new Vector3f(side.x * TRANSLATION/3, side.y * TRANSLATION/3, side.z * TRANSLATION/3));
     }
 
     @FXML
     public void D(ActionEvent actionEvent) {
         Vector3f v = new Vector3f();
-        v.sub(camera.getTarget(), camera.getPosition());
+        v = Vector3f.subtraction(camera.getTarget(), camera.getPosition());
         v.normalize();
         Vector3f side = new Vector3f();
-        side.cross(v, new Vector3f(0, 1, 0));
+        side = Vector3f.crossProduct(v, new Vector3f(0, 1, 0));
         side.normalize();
-        camera.moveTarget(new Vector3f(-side.x * TRANSLATION, -side.y * TRANSLATION, -side.z * TRANSLATION));
-        camera.movePosition(new Vector3f(-side.x * TRANSLATION, -side.y * TRANSLATION, -side.z * TRANSLATION));
+        camera.moveTarget(new Vector3f(-side.x * TRANSLATION/3, -side.y * TRANSLATION/3, -side.z * TRANSLATION/3));
+        camera.movePosition(new Vector3f(-side.x * TRANSLATION/3, -side.y * TRANSLATION/3, -side.z * TRANSLATION/3));
     }
 }

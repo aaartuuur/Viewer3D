@@ -31,6 +31,11 @@ public class Vector2f implements Vector<Vector2f> {
     }
 
     @Override
+    public void sub(Vector3f var1, Vector3f var2) {
+
+    }
+
+    @Override
     public Vector2f multiply(float c) {
         return new Vector2f(c * x, c * y);
     }

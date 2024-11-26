@@ -39,6 +39,11 @@ public class Vector4f implements Vector<Vector4f> {
     }
 
     @Override
+    public void sub(Vector3f var1, Vector3f var2) {
+
+    }
+
+    @Override
     public Vector4f multiply(float c) {
         return new Vector4f(c * x, c * y, c * z, c * w);
     }

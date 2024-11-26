@@ -42,6 +42,7 @@ public class Matrix4f {
         return res;
     }
 
+
     public static Matrix4f multiply(final Matrix4f m1, final Matrix4f m2){
         Matrix4f res = new Matrix4f(new float[SIZE][SIZE]);;
         for (int m1row = 0; m1row<SIZE; m1row++){
