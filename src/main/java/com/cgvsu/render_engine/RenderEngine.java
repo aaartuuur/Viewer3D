@@ -27,7 +27,7 @@ public class RenderEngine {
             final Model mesh,
             final int width,
             final int height) {
-        new Rasterization();
+        new Rasterization(Vector3f.subtraction(camera.getPosition(), camera.getTarget()));
         Matrix4f modelMatrix = rotateScaleTranslate();
         Matrix4f viewMatrix = camera.getViewMatrix();
         Matrix4f projectionMatrix = camera.getProjectionMatrix();
@@ -57,6 +57,7 @@ public class RenderEngine {
 
             if (nVerticesInPolygon > 3) {
                 List<int[]> triangles = Triangulation.earClippingTriangulate(resultPoints);
+
                 for (int[] triangl : triangles) {
                     ArrayList<Vector3f> normals = new ArrayList<>();
                     normals.add(mesh.normals.get(numVertexs[triangl[0]]));
@@ -69,7 +70,7 @@ public class RenderEngine {
                             normals,
                             new float[]{zVertexs[triangl[0]], zVertexs[triangl[1]], zVertexs[triangl[2]]});
                 }
-//                List<int[]> triangles = Triangulation.earClippingTriangulate(resultPoints);
+
 //                for (int[] triangl : triangles) {
 //                    for (int vertexInPolygonInd = 1; vertexInPolygonInd < 3; vertexInPolygonInd++) {
 //                        graphicsContext.strokeLine(
@@ -103,13 +104,25 @@ public class RenderEngine {
 //                            resultPoints.get(vertexInPolygonInd).y);
 //                }
 //
-//                if (nVerticesInPolygon > 0)
-//                    graphicsContext.strokeLine(
-//                            resultPoints.get(nVerticesInPolygon - 1).x,
-//                            resultPoints.get(nVerticesInPolygon - 1).y,
-//                            resultPoints.get(0).x,
-//                            resultPoints.get(0).y);
+//                graphicsContext.strokeLine(
+//                        resultPoints.get(nVerticesInPolygon - 1).x,
+//                        resultPoints.get(nVerticesInPolygon - 1).y,
+//                        resultPoints.get(0).x,
+//                        resultPoints.get(0).y);
             }
+//            for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
+//                    graphicsContext.strokeLine(
+//                            resultPoints.get(vertexInPolygonInd - 1).x,
+//                            resultPoints.get(vertexInPolygonInd - 1).y,
+//                            resultPoints.get(vertexInPolygonInd).x,
+//                            resultPoints.get(vertexInPolygonInd).y);
+//            }
+//
+//            graphicsContext.strokeLine(
+//                    resultPoints.get(nVerticesInPolygon - 1).x,
+//                    resultPoints.get(nVerticesInPolygon - 1).y,
+//                    resultPoints.get(0).x,
+//                    resultPoints.get(0).y);
         }
     }
 }

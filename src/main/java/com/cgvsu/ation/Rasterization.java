@@ -12,16 +12,16 @@ import java.util.Arrays;
 
 public class Rasterization {
 
-    static final Vector3f ray = new Vector3f(1000, 2000, 4000);
-    static final double k = 0.6;
+    static Vector3f ray;
+    static final double k = 0.4;
     static float[][] holst;
 
-    public Rasterization() {
+    public Rasterization(Vector3f camera) {
         Screen screen = Screen.getPrimary();
         int width = (int) screen.getBounds().getWidth();
         int height = (int) screen.getBounds().getHeight();
         holst = new float[height][width];
-
+        ray = camera;
         for (int i = 0; i < holst.length; i++) {
             Arrays.fill(holst[i], Float.MAX_VALUE);
         }
@@ -45,7 +45,7 @@ public class Rasterization {
             final int x2 = (arrY[0] - arrY[2] == 0) ? arrX[2] :
                     (y - arrY[2]) * (arrX[0] - arrX[2]) / (arrY[0] - arrY[2]) + arrX[2];
             for (int x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
-                float[] barizenticCoordinate = barizentricCalculator(x, y, arrX, arrY);
+                float[] barizenticCoordinate = barycentricCalculator(x, y, arrX, arrY);
                 if (zBufer(x, y, vertexsZBuf, barizenticCoordinate)) {
                     pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals));
                 }
@@ -58,7 +58,7 @@ public class Rasterization {
             final int x2 = (arrY[0] - arrY[2] == 0) ? arrX[2] :
                     (y - arrY[2]) * (arrX[0] - arrX[2]) / (arrY[0] - arrY[2]) + arrX[2];
             for (int x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
-                float[] barizenticCoordinate = barizentricCalculator(x, y, arrX, arrY);
+                float[] barizenticCoordinate = barycentricCalculator(x, y, arrX, arrY);
 
                 if (zBufer(x, y, vertexsZBuf, barizenticCoordinate)) {
                     pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals));
@@ -68,15 +68,17 @@ public class Rasterization {
     }
 
     private static boolean zBufer(int x, int y, float[] zBuf, float[] barycentricCoords) {
-        int xAbs = Math.abs(x);
-        int yAbs = Math.abs(y);
-        if (xAbs >= holst[0].length || yAbs >= holst.length) {
+        if (x >= holst[0].length || y >= holst.length || x < 0 || y < 0) {
             return false;
         }
         float len = barycentricCoords[0] * zBuf[0] +
                 barycentricCoords[1] * zBuf[1] +
                 barycentricCoords[2] * zBuf[2];
-        return len < holst[yAbs][xAbs];
+        if (len < holst[y][x]){
+            holst[y][x] = len;
+            return true;
+        }
+        return false;
     }
 
     private static float determinator(int[][] arr) {
@@ -85,17 +87,24 @@ public class Rasterization {
                 arr[0][0] * arr[1][2] * arr[2][1] - arr[0][1] * arr[1][0] * arr[2][2];
     }
 
-    private static float[] barizentricCalculator(int x, int y, int[] arrX, int[] arrY) {
+    private static float[] barycentricCalculator(int x, int y, int[] arrX, int[] arrY) {
         final float generalDeterminant = determinator(new int[][]{arrX, arrY, new int[]{1, 1, 1}});
-        final float coordinate0 = Math.abs(determinator(
+
+        // Проверка на равенство нулю определителя
+        if (generalDeterminant == 0) {
+            return new float[]{0, 0, 0}; // Возвращаем нулевые координаты, если определитель равен нулю
+        }
+
+        final float coordinate0 = determinator(
                 new int[][]{new int[]{x, arrX[1], arrX[2]}, new int[]{y, arrY[1], arrY[2]}, new int[]{1, 1, 1}}) /
-                generalDeterminant);
-        final float coordinate1 = Math.abs(determinator(
+                generalDeterminant;
+        final float coordinate1 = determinator(
                 new int[][]{new int[]{arrX[0], x, arrX[2]}, new int[]{arrY[0], y, arrY[2]}, new int[]{1, 1, 1}}) /
-                generalDeterminant);
-        final float coordinate2 = Math.abs(determinator(
+                generalDeterminant;
+        final float coordinate2 = determinator(
                 new int[][]{new int[]{arrX[0], arrX[1], x}, new int[]{arrY[0], arrY[1], y}, new int[]{1, 1, 1}}) /
-                generalDeterminant);
+                generalDeterminant;
+
         return new float[]{coordinate0, coordinate1, coordinate2};
     }
 
