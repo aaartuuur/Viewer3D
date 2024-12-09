@@ -13,7 +13,7 @@ import java.util.Arrays;
 public class Rasterization {
 
     static Vector3f ray;
-    static final double k = 0.4;
+    static final double k = 0.9;
     static float[][] holst;
 
     public Rasterization(Vector3f camera) {
@@ -21,7 +21,7 @@ public class Rasterization {
         int width = (int) screen.getBounds().getWidth();
         int height = (int) screen.getBounds().getHeight();
         holst = new float[height][width];
-        ray = camera;
+        ray = camera.clone();
         for (int i = 0; i < holst.length; i++) {
             Arrays.fill(holst[i], Float.MAX_VALUE);
         }
@@ -59,7 +59,6 @@ public class Rasterization {
                     (y - arrY[2]) * (arrX[0] - arrX[2]) / (arrY[0] - arrY[2]) + arrX[2];
             for (int x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
                 float[] barizenticCoordinate = barycentricCalculator(x, y, arrX, arrY);
-
                 if (zBufer(x, y, vertexsZBuf, barizenticCoordinate)) {
                     pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals));
                 }
@@ -74,7 +73,7 @@ public class Rasterization {
         float len = barycentricCoords[0] * zBuf[0] +
                 barycentricCoords[1] * zBuf[1] +
                 barycentricCoords[2] * zBuf[2];
-        if (len < holst[y][x]){
+        if (len < holst[y][x]) {
             holst[y][x] = len;
             return true;
         }
@@ -90,9 +89,8 @@ public class Rasterization {
     private static float[] barycentricCalculator(int x, int y, int[] arrX, int[] arrY) {
         final float generalDeterminant = determinator(new int[][]{arrX, arrY, new int[]{1, 1, 1}});
 
-        // Проверка на равенство нулю определителя
         if (generalDeterminant == 0) {
-            return new float[]{0, 0, 0}; // Возвращаем нулевые координаты, если определитель равен нулю
+            return new float[]{1, 1, 1}; 
         }
 
         final float coordinate0 = determinator(
@@ -109,6 +107,11 @@ public class Rasterization {
     }
 
     private static Color getColor(float[] barycentricCoords, Color[] colors, ArrayList<Vector3f> normals) {
+        Vector3f vectorLight = normals.get(0).multiply(barycentricCoords[0]);
+        vectorLight.add(normals.get(1).multiply(barycentricCoords[1]));
+        vectorLight.add(normals.get(2).multiply(barycentricCoords[2]));
+        vectorLight.normalize();
+        final float l = -1 * Vector3f.dotProduct(vectorLight, ray.normal());
 
         final double red = barycentricCoords[0] * colors[0].getRed() +
                 barycentricCoords[1] * colors[1].getRed() +
@@ -119,18 +122,12 @@ public class Rasterization {
         final double blue = barycentricCoords[0] * colors[0].getBlue() +
                 barycentricCoords[1] * colors[1].getBlue() +
                 barycentricCoords[2] * colors[2].getBlue();
-        Vector3f vectorLight = normals.get(0).multiply(barycentricCoords[0]);
-        vectorLight.add(normals.get(1).multiply(barycentricCoords[1]));
-        vectorLight.add(normals.get(2).multiply(barycentricCoords[2]));
-        vectorLight.normalize();
-        ray.normalize();
-        final float light = -1 * Vector3f.dotProduct(vectorLight, ray);
 
         return new Color(
-                Math.max(0, Math.min(1, red)),
-                Math.max(0, Math.min(1, green)),
-                Math.max(0, Math.min(1, blue)),
-                Math.max(0, Math.min(1, 1 - k + k * (light < 0 ? 0 : light))));
+                Math.max(0, Math.min(1, red * (1 - k) + red * k * l)),
+                Math.max(0, Math.min(1, green * (1 - k) + green * k * l)),
+                Math.max(0, Math.min(1, blue * (1 - k) + blue * k * l)),
+                1);
     }
 
     private static void sort(int[] x, int[] y, Color[] c) {

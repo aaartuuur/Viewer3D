@@ -123,6 +123,10 @@ public class Vector3f implements Vector<Vector3f> {
         this.y = var4;
     }
 
+    public Vector3f clone(){
+        return new Vector3f(this.x, this.y, this.z);
+    }
+
     @Override
     public boolean equals(final Vector3f other) {
         return Math.abs(x - other.x) < EPS
