@@ -36,7 +36,7 @@ public class RenderEngine {
         modelViewProjectionMatrix.mul(viewMatrix);
         modelViewProjectionMatrix.mul(projectionMatrix);
 
-        mesh.normals = FindNormals.findNormals(mesh.polygons, mesh.vertices);
+        mesh.normals = FindNormals.findNormals(mesh);
 
         final int nPolygons = mesh.polygons.size();
         for (int polygonInd = 0; polygonInd < nPolygons; ++polygonInd) {
@@ -73,10 +73,10 @@ public class RenderEngine {
                 List<int[]> triangles = Triangulation.earClippingTriangulate(resultPoints);
 
                 for (int[] triangl : triangles) {
-                    ArrayList<Vector3f> normals = new ArrayList<>();
-                    normals.add(mesh.normals.get(numVertexs[triangl[0]]));
-                    normals.add(mesh.normals.get(numVertexs[triangl[1]]));
-                    normals.add(mesh.normals.get(numVertexs[triangl[2]]));
+                    Vector3f[] normals = new Vector3f[3];
+                    normals[0] = (mesh.normals.get(numVertexs[triangl[0]]));
+                    normals[1] = (mesh.normals.get(numVertexs[triangl[1]]));
+                    normals[2] = (mesh.normals.get(numVertexs[triangl[2]]));
                     Rasterization.fillTriangle(graphicsContext,
                             new int[]{(int) resultPoints.get(triangl[0]).x, (int) resultPoints.get(triangl[1]).x, (int) resultPoints.get(triangl[2]).x},
                             new int[]{(int) resultPoints.get(triangl[0]).y, (int) resultPoints.get(triangl[1]).y, (int) resultPoints.get(triangl[2]).y},
@@ -100,10 +100,10 @@ public class RenderEngine {
 //                            resultPoints.get(triangl[0]).y);
 //                }
             } else {
-                ArrayList<Vector3f> normals = new ArrayList<>();
-                normals.add(mesh.normals.get(0));
-                normals.add(mesh.normals.get(1));
-                normals.add(mesh.normals.get(2));
+                Vector3f[] normals = new Vector3f[3];
+                normals[0] = (mesh.normals.get(0));
+                normals[1] = (mesh.normals.get(1));
+                normals[2] = (mesh.normals.get(2));
                 Rasterization.fillTriangle(graphicsContext,
                         new int[]{(int) resultPoints.get(0).x, (int) resultPoints.get(1).x, (int) resultPoints.get(2).x},
                         new int[]{(int) resultPoints.get(0).y, (int) resultPoints.get(1).y, (int) resultPoints.get(2).y},

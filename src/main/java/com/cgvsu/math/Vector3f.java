@@ -92,6 +92,9 @@ public class Vector3f implements Vector<Vector3f> {
         }
         return this.divide(length);
     }
+    public Vector3f negate(){
+        return new Vector3f(-x, -y, -z);
+    }
 
     public final void normalize() {
         float var1 = (float)(1.0 / Math.sqrt((double)(this.x * this.x + this.y * this.y + this.z * this.z)));

@@ -5,9 +5,20 @@ import java.util.List;
 
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Polygon;
+import com.cgvsu.model.Model;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class FindNormals {
-    public static ArrayList<Vector3f> findNormals(List<Polygon> polygons, List<Vector3f> vertices) {
+    public static ArrayList<Vector3f> findNormals(Model m) {
+        List<Polygon> polygons = m.polygons;
+        List<Vector3f> vertices = m.vertices;
+
         ArrayList<Vector3f> temporaryNormals = new ArrayList<>();
         ArrayList<Vector3f> normals = new ArrayList<>();
 
@@ -16,14 +27,17 @@ public class FindNormals {
                     vertices.get(p.getVertexIndices().get(1)), vertices.get(p.getVertexIndices().get(2))));
         }
 
-        for (int i = 0; i < vertices.size(); i++) {
-            List<Vector3f> polygonNormalsList = new ArrayList<>();
-            for (int j = 0; j < polygons.size(); j++) {
-                if (polygons.get(j).getVertexIndices().contains(i)) {
-                    polygonNormalsList.add(temporaryNormals.get(j));
-                }
+        Map<Integer, Set<Vector3f>> vertexPolygonsMap = new HashMap<>();
+        for (int j = 0; j < polygons.size(); j++) {
+            List<Integer> vertexIndices = polygons.get(j).getVertexIndices();
+            Vector3f vec = temporaryNormals.get(j);
+            for (Integer index : vertexIndices) {
+                vertexPolygonsMap.computeIfAbsent(index, k -> new HashSet<>()).add(vec);
             }
-            normals.add(FindNormals.findVertexNormals(polygonNormalsList));
+        }
+
+        for (int i = 0; i < vertices.size(); i++) {
+            normals.add(findVertexNormals(vertexPolygonsMap.get(i)));
         }
 
         return normals;
@@ -33,16 +47,15 @@ public class FindNormals {
         Vector3f a = Vector3f.subtraction(vs[0], vs[1]);
         Vector3f b = Vector3f.subtraction(vs[0], vs[2]);
 
-        Vector3f c = Vector3f.crossProduct(a, b);
+        Vector3f c = vectorProduct(a, b);
         if (determinant(a, b, c) < 0) {
-            c = Vector3f.crossProduct(b, a);
+            c = vectorProduct(b, a);
         }
 
-        c.normalize();
-        return c;
+        return normalize(c);
     }
 
-    public static Vector3f findVertexNormals(List<Vector3f> vs) {
+    public static Vector3f findVertexNormals(Set<Vector3f> vs) {
         float xs = 0, ys = 0, zs = 0;
 
         for (Vector3f v : vs) {
@@ -55,12 +68,32 @@ public class FindNormals {
         ys /= vs.size();
         zs /= vs.size();
 
-        Vector3f v = new Vector3f(xs, ys, zs);
-        v.normalize();
-        return v;
+        return normalize(new Vector3f(xs, ys, zs));
     }
 
     public static double determinant(Vector3f a, Vector3f b, Vector3f c) {
         return a.x * (b.y * c.z) - a.y * (b.x * c.z - c.x * b.z) + a.z * (b.x * c.y - c.x * b.y);
+    }
+
+    public static Vector3f normalize(Vector3f v) {
+        if (v == null) {
+            return null;
+        }
+
+        double length = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+
+        if (length == 0) {
+            return new Vector3f(0, 0, 0);
+        }
+
+        v.x /= length;
+        v.y /= length;
+        v.z /= length;
+
+        return new Vector3f(v.x, v.y, v.z);
+    }
+
+    public static Vector3f vectorProduct(Vector3f a, Vector3f b) {
+        return new Vector3f(a.y * b.z - b.y * a.z, -a.x * b.z + b.x * a.z, a.x * b.y - b.x * a.y);
     }
 }
