@@ -29,6 +29,13 @@ public class Vector3f implements Vector<Vector3f> {
         z += v.z;
     }
 
+    public float get(int ind){
+        if(ind == 0){return x;}
+        if(ind == 1){return y;}
+        if(ind == 2){return z;}
+        return 0;
+    }
+
     @Override
     public void sub(Vector3f v) {
 

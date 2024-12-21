@@ -79,7 +79,7 @@ public class GuiController {
     private void handleMousePressed(MouseEvent event) {
         lastMouseX = event.getSceneX();
         lastMouseY = event.getSceneY();
-        isMousePressed = true;
+        isMousePressed = event.isPrimaryButtonDown();
     }
 
     private void handleMouseDragged(MouseEvent event) {
@@ -87,8 +87,6 @@ public class GuiController {
             double deltaX = event.getSceneX() - lastMouseX;
             double deltaY = event.getSceneY() - lastMouseY;
 
-            // Изменяем направление камеры в зависимости от движения мыши
-            camera.rotate((float) deltaY * 0.1F, (float) deltaX * 0.1F);
 
             lastMouseX = event.getSceneX();
             lastMouseY = event.getSceneY();
@@ -141,15 +139,33 @@ public class GuiController {
 
     @FXML
     public void A(ActionEvent actionEvent) {
+
+        float length = Vector3f.lenghtTwoVectors(camera.getTarget(), camera.getPosition());
         Vector3f v = new Vector3f();
         v = Vector3f.subtraction(camera.getTarget(), camera.getPosition());
         v.normalize();
         Vector3f side = new Vector3f();
         side = Vector3f.crossProduct(v, new Vector3f(0, 1, 0));
         side.normalize();
-        camera.moveTarget(new Vector3f(side.x * TRANSLATION/3, side.y * TRANSLATION/3, side.z * TRANSLATION/3));
+        camera.moveTarget(camera.getTarget());
         camera.movePosition(new Vector3f(side.x * TRANSLATION/3, side.y * TRANSLATION/3, side.z * TRANSLATION/3));
+
+
     }
+//    public void A(ActionEvent actionEvent) {
+//        Vector3f v = Vector3f.subtraction(camera.getTarget(), camera.getPosition());
+//        v.normalize();
+//        float length = v.length();
+//        Vector3f side = Vector3f.crossProduct(v, new Vector3f(0, 1, 0));
+//        side.normalize();
+//        float angle = TRANSLATION / 100.0f;
+//        float cosAngle = (float) Math.cos(angle);
+//        float sinAngle = (float) Math.sin(angle);
+//        Vector3f newDirection = new Vector3f(side.x + length * sinAngle, v.y, side.z + length * cosAngle);
+//        Vector3f newPosition = Vector3f.addition(camera.getTarget(), newDirection);
+//        camera.setPosition(newPosition);
+//        camera.setTarget(camera.getTarget());
+//    }
 
     @FXML
     public void D(ActionEvent actionEvent) {

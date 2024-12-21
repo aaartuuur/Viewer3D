@@ -114,4 +114,50 @@ public class Matrix4f {
         }
         return true;
     }
+
+    public Vector3f multMatr4OnVect3(final Matrix4f matr, final Vector3f vect){
+        float x = ((matr.getElem(0,0) * vect.get(0)) + (matr.getElem(1,0) * vect.get(1)) +
+                (matr.getElem(2,0) * vect.get(2)) + matr.getElem(3,0));
+
+        float y = ((matr.getElem(0,1) * vect.get(0)) + (matr.getElem(1,1) * vect.get(1)) +
+                (matr.getElem(2,1) * vect.get(2)) + matr.getElem(3,1));
+
+        float z = ((matr.getElem(0,2) * vect.get(0)) + (matr.getElem(1,2) * vect.get(1)) +
+                (matr.getElem(2,2) * vect.get(2)) + matr.getElem(3,2));
+
+        float w = ((matr.getElem(0,3) * vect.get(0)) + (matr.getElem(1,3) * vect.get(1)) +
+                (matr.getElem(2,3) * vect.get(2)) + matr.getElem(3,3));
+
+        return new Vector3f(x/w, y/w, z/w);
+    }
+
+    private float getElem(int x, int y){
+        return mat[x][y];
+    }
+
+    public Matrix4f rotateX(double ang){
+        double sin = Math.sin(ang);
+        double cos = Math.cos(ang);
+
+        Matrix4f rotationX = new Matrix4f(1.0f); // Единичная матрица
+        rotationX.mat[1][1] = (float) cos;
+        rotationX.mat[2][1] = (float) -sin;
+        rotationX.mat[1][2] = (float) sin;
+        rotationX.mat[2][2] = (float) cos;
+
+        return Matrix4f.multiply(this, rotationX);
+    }
+
+    public Matrix4f rotateY(double ang) {
+        double sin = Math.sin(ang);
+        double cos = Math.cos(ang);
+
+        Matrix4f rotationY = new Matrix4f(1.0f); // Единичная матрица
+        rotationY.mat[0][0] = (float) cos;
+        rotationY.mat[0][2] = (float) -sin;
+        rotationY.mat[2][0] = (float) sin;
+        rotationY.mat[2][2] = (float) cos;
+
+        return Matrix4f.multiply(this, rotationY);
+    }
 }
