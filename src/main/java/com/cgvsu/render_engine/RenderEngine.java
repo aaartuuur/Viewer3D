@@ -1,23 +1,19 @@
 package com.cgvsu.render_engine;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.cgvsu.ation.FindNormals;
 import com.cgvsu.ation.Rasterization;
 import com.cgvsu.ation.Triangulation;
+import com.cgvsu.math.Matrix4x4;
 import com.cgvsu.math.Vector3f;
-import javafx.fxml.FXML;
-import javafx.scene.canvas.GraphicsContext;
-
-import javax.vecmath.*;
-
 import com.cgvsu.model.Model;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+
+import javax.vecmath.Point2f;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.cgvsu.render_engine.GraphicConveyor.*;
-
-import javafx.scene.canvas.Canvas;
-import javafx.scene.paint.Color;
 
 public class RenderEngine {
 
@@ -28,13 +24,13 @@ public class RenderEngine {
             final int width,
             final int height) {
         new Rasterization(Vector3f.subtraction(camera.getTarget(), camera.getPosition()));
-        Matrix4f modelMatrix = rotateScaleTranslate();
-        Matrix4f viewMatrix = camera.getViewMatrix();
-        Matrix4f projectionMatrix = camera.getProjectionMatrix();
+        Matrix4x4 modelMatrix = rotateScaleTranslate();
+        Matrix4x4 viewMatrix = camera.getViewMatrix();
+        Matrix4x4 projectionMatrix = camera.getProjectionMatrix();
 
-        Matrix4f modelViewProjectionMatrix = new Matrix4f(modelMatrix);
-        modelViewProjectionMatrix.mul(viewMatrix);
-        modelViewProjectionMatrix.mul(projectionMatrix);
+        Matrix4x4 modelViewProjectionMatrix = new  Matrix4x4(modelMatrix);
+        modelViewProjectionMatrix = Matrix4x4.multiply(modelViewProjectionMatrix, viewMatrix);
+        modelViewProjectionMatrix = Matrix4x4.multiply(modelViewProjectionMatrix, projectionMatrix);
 
         mesh.normals = FindNormals.findNormals(mesh);
 

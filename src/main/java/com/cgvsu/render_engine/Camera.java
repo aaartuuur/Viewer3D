@@ -1,11 +1,20 @@
 package com.cgvsu.render_engine;
 
+import com.cgvsu.math.Matrix4x4;
 import com.cgvsu.math.Vector3f;
 
-import javax.vecmath.Matrix4f;
-//import com.cgvsu.math.Matrix4f;
+import static com.cgvsu.render_engine.GraphicConveyor.multiplyMatrix4ByVector3;
 
 public class Camera {
+
+    private Vector3f position;
+    private Vector3f target;
+    private float fov;
+    private float aspectRatio;
+    private float nearPlane;
+    private float farPlane;
+    private double mousePositionX;
+    private double mousePositionY;
 
     public Camera(
             final Vector3f position,
@@ -20,6 +29,8 @@ public class Camera {
         this.aspectRatio = aspectRatio;
         this.nearPlane = nearPlane;
         this.farPlane = farPlane;
+        this.mousePositionX = mousePositionX;
+        this.mousePositionY = mousePositionY;
     }
 
     public void setPosition(final Vector3f position) {
@@ -50,46 +61,32 @@ public class Camera {
         this.target.add(translation);
     }
 
-//    public void rotate(float angleX, float angleY) {
-//        // Вычисляем вектор направления камеры
-//        // Вычисляем вектор направления камеры
-//        Vector3f direction = Vector3f.subtraction(target, position);
-//
-//        // Преобразуем углы в радианы
-//        float radX = (float) Math.toRadians(angleX);
-//        float radY = (float) Math.toRadians(angleY);
-//
-//        // Вычисляем новые координаты цели с использованием тригонометрических функций
-//        float newX = (float) (direction.x * Math.cos(radY) - direction.z * Math.sin(radY));
-//        float newZ = (float) (direction.x * Math.sin(radY) + direction.z * Math.cos(radY));
-//
-//        float newY = (float) (direction.y * Math.cos(radX) - newZ * Math.sin(radX));
-//        newZ = (float) (direction.y * Math.sin(radX) + newZ * Math.cos(radX));
-//
-//        // Обновляем цель камеры
-//        target = Vector3f.addition(position, new Vector3f(newX, newY, newZ));
-//    }
+    public void rotateCam(double x, double y, boolean isPrimaryButtonDown){
+        if(isPrimaryButtonDown) {
+            double deltaX =  (x - mousePositionX);
+            double deltaY =  (y - mousePositionY);
 
+            double rotX =  (-deltaY * 0.2);
+            double rotY =  (-deltaX * 0.2);
 
-    private void rotateCam(double deltaX, double deltaY){
-        double rotX = -deltaY * 0.3;
-        double rotY = -deltaX * 0.3;
+            Matrix4x4 rotMatrX = Matrix4x4.rotate((float) rotX, 1, 0, 0);
+            Matrix4x4 rotMatrY = Matrix4x4.rotate((float) rotY, 0, 1, 0);
 
-//        Matrix4f rotMatrX = rotateX()
+            Matrix4x4 rotMatr = Matrix4x4.multiply(rotMatrX, rotMatrY);
+
+            position = multiplyMatrix4ByVector3(rotMatr, position);
+        }
+
+        mousePositionX = x;
+        mousePositionY = y;
     }
 
-    Matrix4f getViewMatrix() {
+    Matrix4x4 getViewMatrix() {
         return GraphicConveyor.lookAt(position, target);
     }
 
-    Matrix4f getProjectionMatrix() {
+    Matrix4x4 getProjectionMatrix() {
         return GraphicConveyor.perspective(fov, aspectRatio, nearPlane, farPlane);
     }
 
-    private Vector3f position;
-    private Vector3f target;
-    private float fov;
-    private float aspectRatio;
-    private float nearPlane;
-    private float farPlane;
 }

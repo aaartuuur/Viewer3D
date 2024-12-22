@@ -1,29 +1,25 @@
 package com.cgvsu;
 
+import com.cgvsu.math.Vector3f;
+import com.cgvsu.model.Model;
+import com.cgvsu.objreader.ObjReader;
+import com.cgvsu.render_engine.Camera;
 import com.cgvsu.render_engine.RenderEngine;
-import javafx.fxml.FXML;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.layout.AnchorPane;
-import javafx.stage.Stage;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.Duration;
+
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.io.IOException;
-import java.io.File;
-import com.cgvsu.math.Vector3f;
-
-import javafx.scene.input.MouseEvent;
-import javafx.event.EventHandler;
-import javafx.scene.Scene;
-
-import com.cgvsu.model.Model;
-import com.cgvsu.objreader.ObjReader;
-import com.cgvsu.render_engine.Camera;
 
 public class GuiController {
     final private float TRANSLATION = 1.5F;
@@ -36,16 +32,13 @@ public class GuiController {
 
     private Model mesh = null;
 
-    private Camera camera = new Camera(
+    Camera camera = new Camera(
             new Vector3f(0, 0, 100),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
 
     private Timeline timeline;
 
-    private double lastMouseX;
-    private double lastMouseY;
-    private boolean isMousePressed = false;
 
     @FXML
     private void initialize() {
@@ -71,30 +64,8 @@ public class GuiController {
         timeline.play();
 
         // Добавляем обработчики событий мыши
-        canvas.setOnMousePressed(this::handleMousePressed);
-        canvas.setOnMouseDragged(this::handleMouseDragged);
-        canvas.setOnMouseReleased(this::handleMouseReleased);
-    }
-
-    private void handleMousePressed(MouseEvent event) {
-        lastMouseX = event.getSceneX();
-        lastMouseY = event.getSceneY();
-        isMousePressed = event.isPrimaryButtonDown();
-    }
-
-    private void handleMouseDragged(MouseEvent event) {
-        if (isMousePressed) {
-            double deltaX = event.getSceneX() - lastMouseX;
-            double deltaY = event.getSceneY() - lastMouseY;
-
-
-            lastMouseX = event.getSceneX();
-            lastMouseY = event.getSceneY();
-        }
-    }
-
-    private void handleMouseReleased(MouseEvent event) {
-        isMousePressed = false;
+        canvas.setOnMouseMoved(event -> camera.rotateCam(event.getX(), event.getY(), false));
+        canvas.setOnMouseDragged(event -> camera.rotateCam(event.getX(), event.getY(), event.isPrimaryButtonDown()));
     }
 
     @FXML
@@ -124,7 +95,6 @@ public class GuiController {
         Vector3f v = new Vector3f();
         v = Vector3f.subtraction(camera.getTarget(), camera.getPosition());
         v.normalize();
-        camera.moveTarget(new Vector3f(v.x * TRANSLATION, v.y * TRANSLATION, v.z * TRANSLATION));
         camera.movePosition(new Vector3f(v.x * TRANSLATION, v.y * TRANSLATION, v.z * TRANSLATION));
     }
 
@@ -133,7 +103,6 @@ public class GuiController {
         Vector3f v = new Vector3f();
         v = Vector3f.subtraction(camera.getTarget(), camera.getPosition());
         v.normalize();
-        camera.moveTarget(new Vector3f(-v.x * TRANSLATION, -v.y * TRANSLATION, -v.z * TRANSLATION));
         camera.movePosition(new Vector3f(-v.x * TRANSLATION, -v.y * TRANSLATION, -v.z * TRANSLATION));
     }
 
@@ -147,25 +116,10 @@ public class GuiController {
         Vector3f side = new Vector3f();
         side = Vector3f.crossProduct(v, new Vector3f(0, 1, 0));
         side.normalize();
-        camera.moveTarget(camera.getTarget());
         camera.movePosition(new Vector3f(side.x * TRANSLATION/3, side.y * TRANSLATION/3, side.z * TRANSLATION/3));
 
 
     }
-//    public void A(ActionEvent actionEvent) {
-//        Vector3f v = Vector3f.subtraction(camera.getTarget(), camera.getPosition());
-//        v.normalize();
-//        float length = v.length();
-//        Vector3f side = Vector3f.crossProduct(v, new Vector3f(0, 1, 0));
-//        side.normalize();
-//        float angle = TRANSLATION / 100.0f;
-//        float cosAngle = (float) Math.cos(angle);
-//        float sinAngle = (float) Math.sin(angle);
-//        Vector3f newDirection = new Vector3f(side.x + length * sinAngle, v.y, side.z + length * cosAngle);
-//        Vector3f newPosition = Vector3f.addition(camera.getTarget(), newDirection);
-//        camera.setPosition(newPosition);
-//        camera.setTarget(camera.getTarget());
-//    }
 
     @FXML
     public void D(ActionEvent actionEvent) {
@@ -175,7 +129,6 @@ public class GuiController {
         Vector3f side = new Vector3f();
         side = Vector3f.crossProduct(v, new Vector3f(0, 1, 0));
         side.normalize();
-        camera.moveTarget(new Vector3f(-side.x * TRANSLATION/3, -side.y * TRANSLATION/3, -side.z * TRANSLATION/3));
         camera.movePosition(new Vector3f(-side.x * TRANSLATION/3, -side.y * TRANSLATION/3, -side.z * TRANSLATION/3));
     }
 }

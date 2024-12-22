@@ -2,7 +2,6 @@ package com.cgvsu.math;
 
 import static com.cgvsu.math.Global.EPS;
 
-;
 
 public class Vector3f implements Vector<Vector3f> {
     public Vector3f(float x, float y, float z) {
@@ -27,13 +26,6 @@ public class Vector3f implements Vector<Vector3f> {
         x += v.x;
         y += v.y;
         z += v.z;
-    }
-
-    public float get(int ind){
-        if(ind == 0){return x;}
-        if(ind == 1){return y;}
-        if(ind == 2){return z;}
-        return 0;
     }
 
     @Override
@@ -142,5 +134,28 @@ public class Vector3f implements Vector<Vector3f> {
         return Math.abs(x - other.x) < EPS
                 && Math.abs(y - other.y) < EPS
                 && Math.abs(z - other.z) < EPS;
+    }
+
+    public float get(int ind){
+        if(ind == 0){return x;}
+        if(ind == 1){return y;}
+        if(ind == 2){return z;}
+        return 0;
+    }
+
+    public void set(float x, float y, float z){
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    public void setX(float x){
+        this.x = x;
+    }
+    public void setY(float y){
+        this.y = y;
+    }
+    public void setZ(float z){
+        this.z = z;
     }
 }
