@@ -2,21 +2,21 @@ package com.cgvsu.math;
 
 import static com.cgvsu.math.Global.EPS;
 
-public class Matrix4x4 {
+public class Matrix4f {
 
     private float[][] mat;
 
-    public Matrix4x4(float[][] mat){
+    public Matrix4f(float[][] mat){
         if (mat.length != SIZE || mat[0].length != SIZE) {
             throw new IllegalArgumentException("Matrix must be 4x4");
         }
         this.mat = mat;
     }
 
-    public Matrix4x4() {
+    public Matrix4f() {
         this.mat = new float[SIZE][SIZE];
     }
-    public Matrix4x4(float[] num) {
+    public Matrix4f(float[] num) {
         this.mat = new float[SIZE][SIZE];
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
@@ -25,7 +25,7 @@ public class Matrix4x4 {
         }
     }
 
-    public Matrix4x4(
+    public Matrix4f(
             float m00, float m01, float m02, float m03,
             float m10, float m11, float m12, float m13,
             float m20, float m21, float m22, float m23,
@@ -40,20 +40,20 @@ public class Matrix4x4 {
 
     static final private int SIZE = 4;
 
-    public Matrix4x4(Matrix4x4 t) {
+    public Matrix4f(Matrix4f t) {
         float [][] m = t.toArray();
         this.mat = m;
     }
 
-    public Matrix4x4(double[][] rotationMatrix) {
+    public Matrix4f(double[][] rotationMatrix) {
     }
 
     public float[][] toArray() {
         return mat;
     }
 
-    public static Matrix4x4 add(final Matrix4x4 m1, final Matrix4x4 m2){
-        Matrix4x4 res = new Matrix4x4(new float[SIZE][SIZE]);
+    public static Matrix4f add(final Matrix4f m1, final Matrix4f m2){
+        Matrix4f res = new Matrix4f(new float[SIZE][SIZE]);
         for(int row = 0; row<SIZE; row++){
             for(int col = 0; col<SIZE; col++){
                 res.mat[row][col] = m1.mat[row][col] + m2.mat[row][col];
@@ -62,8 +62,8 @@ public class Matrix4x4 {
         return res;
     }
 
-    public static Matrix4x4 sub(final Matrix4x4 m1, final Matrix4x4 m2){
-        Matrix4x4 res = new Matrix4x4(new float[SIZE][SIZE]);
+    public static Matrix4f sub(final Matrix4f m1, final Matrix4f m2){
+        Matrix4f res = new Matrix4f(new float[SIZE][SIZE]);
         for(int row = 0; row<SIZE; row++){
             for(int col = 0; col<SIZE; col++){
                 res.mat[row][col] = m1.mat[row][col] - m2.mat[row][col];
@@ -73,8 +73,8 @@ public class Matrix4x4 {
     }
 
 
-    public static Matrix4x4 multiply(final Matrix4x4 m1, final Matrix4x4 m2){
-        Matrix4x4 res = new Matrix4x4(new float[SIZE][SIZE]);;
+    public static Matrix4f multiply(final Matrix4f m1, final Matrix4f m2){
+        Matrix4f res = new Matrix4f(new float[SIZE][SIZE]);;
         for (int m1row = 0; m1row<SIZE; m1row++){
             for (int m2col = 0; m2col<SIZE; m2col++){
                 float a = 0;
@@ -98,14 +98,14 @@ public class Matrix4x4 {
         return new Vector4f(res[0], res[1], res[2], res[3]);
     }
 
-    public Matrix4x4 multiply(float scalar) {
+    public Matrix4f multiply(float scalar) {
         float[][] result = new float[4][4];
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 result[i][j] = this.mat[i][j] * scalar;
             }
         }
-        return new Matrix4x4(result);
+        return new Matrix4f(result);
     }
 
     public void transpose(){
@@ -144,7 +144,7 @@ public class Matrix4x4 {
         return minor;
     }
 
-    public boolean equals(final Matrix4x4 other){
+    public boolean equals(final Matrix4f other){
         for(int row = 0; row<SIZE; row++){
             for(int col = 0; col<SIZE; col++){
                 if (Math.abs(this.mat[row][col] - other.mat[row][col]) >= EPS){
@@ -156,7 +156,7 @@ public class Matrix4x4 {
     }
 
 
-    public static Matrix4x4 rotate(float angle, float axisX, float axisY, float axisZ) {
+    public static Matrix4f rotate(float angle, float axisX, float axisY, float axisZ) {
         double radians = (double) Math.toRadians(angle);
         double sin = (double) Math.sin(radians);
         double cos = (double) Math.cos(radians);
@@ -169,7 +169,7 @@ public class Matrix4x4 {
                 {0, 0, 0, 1}
         };
 
-        return new Matrix4x4(rotationMatrix);
+        return new Matrix4f(rotationMatrix);
     }
 
     public float getElem(int x, int y){

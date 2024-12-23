@@ -1,20 +1,20 @@
 package com.cgvsu.ation;
 
-import com.cgvsu.GuiController;
+import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
+import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import static com.cgvsu.math.Global.EPS;
 
 public class Rasterization {
 
     static Vector3f ray;
-    static final double k = 0.9;
+    static final double k = 0.6;
     static float[][] holst;
 
     public Rasterization(Vector3f camera) {
@@ -28,17 +28,87 @@ public class Rasterization {
         }
     }
 
+    public static void drawLine(
+            final GraphicsContext graphicsContext,
+            int x1, int y1,
+            int x2, int y2,
+            float z1, float z2,
+            final Color color) {
+
+        final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
+
+        if (y1 > y2) {
+            int tempY = y1;
+            y1 = y2;
+            y2 = tempY;
+            int tempX = x1;
+            x1 = x2;
+            x2 = tempX;
+            float tempZ = z1;
+            z1 = z2;
+            z2 = tempZ;
+        }
+
+        int dx = x2 - x1;
+        int dy = y2 - y1;
+        float dz = z2 - z1;
+
+        int x = x1;
+        int y = y1;
+        float z = z1;
+
+        int stepX = (dx > 0) ? 1 : -1;
+        int stepY = (dy > 0) ? 1 : -1;
+
+        dx = Math.abs(dx);
+        dy = Math.abs(dy);
+
+        int ddx, ddy;
+        if (dx > dy) {
+            ddx = stepX;
+            ddy = stepY;
+        } else {
+            ddx = stepX;
+            ddy = stepY;
+        }
+
+        int error = (dx > dy ? dx : -dy) / 2;
+        int error2;
+
+        for (int i = 0; i <= (Math.max(dx, dy)); i++) {
+            float zStep = dz / (Math.max(dx, dy));
+            if (zBufferForLine(x, y, z)) {
+                pixelWriter.setColor(x, y, color);
+            }
+            z += zStep;
+
+            error2 = error;
+            if (error2 > -dx) {
+                error -= dy;
+                x += ddx;
+            }
+            if (error2 < dy) {
+                error += dx;
+                y += ddy;
+            }
+        }
+    }
+
     public static void fillTriangle(
             final GraphicsContext graphicsContext,
             int[] arrX,
             int[] arrY,
             Color[] colors,
             Vector3f[] normals,
-            float[] vertexsZBuf) {
+            float[] vertexsZBuf,
+            Image textureImage,
+            Vector2f[] textureCoords,
+            boolean textureDraw) {
 
         final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
+        final PixelReader pixelReader = textureImage == null ? null : textureImage.getPixelReader();
 
-        sort(arrX, arrY, vertexsZBuf, colors, normals);
+        sort(arrX, arrY, vertexsZBuf, colors, normals, textureCoords);
 
         for (int y = arrY[1]; y <= arrY[2]; y++) {
             final int x1 = (arrY[2] - arrY[1] == 0) ? arrX[1] :
@@ -48,7 +118,28 @@ public class Rasterization {
             for (int x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
                 float[] barizenticCoordinate = barycentricCalculator(x, y, arrX, arrY);
                 if (zBufer(x, y, vertexsZBuf, barizenticCoordinate)) {
-                    pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals));
+                    if (textureDraw){
+                        float u = barizenticCoordinate[0] * textureCoords[0].x +
+                                barizenticCoordinate[1] * textureCoords[1].x +
+                                barizenticCoordinate[2] * textureCoords[2].x;
+                        float v = barizenticCoordinate[0] * textureCoords[0].y +
+                                barizenticCoordinate[1] * textureCoords[1].y +
+                                barizenticCoordinate[2] * textureCoords[2].y;
+
+                        u = Math.max(0, Math.min(1, u));
+                        v = Math.max(0, Math.min(1, v));
+
+                        int xt = (int) (u * textureImage.getWidth());
+                        int yt = (int) (v * textureImage.getHeight());
+
+                        xt = (int) Math.max(0, Math.min(textureImage.getWidth() - 1, xt));
+                        yt = (int) Math.max(0, Math.min(textureImage.getHeight() - 1, yt));
+
+                        Color textureColor = pixelReader.getColor(xt, yt);
+                        pixelWriter.setColor(x, y, textureColor);
+                    }else {
+                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals));
+                    }
                 }
             }
         }
@@ -61,7 +152,28 @@ public class Rasterization {
             for (int x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
                 float[] barizenticCoordinate = barycentricCalculator(x, y, arrX, arrY);
                 if (zBufer(x, y, vertexsZBuf, barizenticCoordinate)) {
-                    pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals));
+                    if (textureDraw){
+                        float u = barizenticCoordinate[0] * textureCoords[0].x +
+                                barizenticCoordinate[1] * textureCoords[1].x +
+                                barizenticCoordinate[2] * textureCoords[2].x;
+                        float v = barizenticCoordinate[0] * textureCoords[0].y +
+                                barizenticCoordinate[1] * textureCoords[1].y +
+                                barizenticCoordinate[2] * textureCoords[2].y;
+
+                        u = Math.max(0, Math.min(1, u));
+                        v = Math.max(0, Math.min(1, v));
+
+                        int xt = (int) (u * textureImage.getWidth());
+                        int yt = (int) (v * textureImage.getHeight());
+
+                        xt = (int) Math.max(0, Math.min(textureImage.getWidth() - 1, xt));
+                        yt = (int) Math.max(0, Math.min(textureImage.getHeight() - 1, yt));
+
+                        Color textureColor = pixelReader.getColor(xt, yt);
+                        pixelWriter.setColor(x, y, textureColor);
+                    }else {
+                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals));
+                    }
                 }
             }
         }
@@ -76,6 +188,16 @@ public class Rasterization {
                 barycentricCoords[2] * zBuf[2];
         if (len < holst[y][x]) {
             holst[y][x] = len;
+            return true;
+        }
+        return false;
+    }
+    private static boolean zBufferForLine(int x, int y, float z){
+        if (x >= holst[0].length || y >= holst.length || x < 0 || y < 0) {
+            return false;
+        }
+        if (z < holst[y][x]) {
+            holst[y][x] = z-0.000001F;
             return true;
         }
         return false;
@@ -112,7 +234,7 @@ public class Rasterization {
         vectorLight.add(normals[1].multiply(barycentricCoords[1]));
         vectorLight.add(normals[2].multiply(barycentricCoords[2]));
         vectorLight.normalize();
-        final float l = -1 * Vector3f.dotProduct(vectorLight, ray.normal());
+        final float l = -1 * Vector3f.dotProduct(vectorLight, ray.equals(new Vector3f()) ? new Vector3f(): ray.normal());
         final double red = barycentricCoords[0] * colors[0].getRed() +
                 barycentricCoords[1] * colors[1].getRed() +
                 barycentricCoords[2] * colors[2].getRed();
@@ -130,35 +252,38 @@ public class Rasterization {
                 1);
     }
 
-    private static void sort(int[] x, int[] y, float[] z, Color[] c, Vector3f[] n) {
+    private static void sort(int[] x, int[] y, float[] z, Color[] c, Vector3f[] n, Vector2f[] tc) {
         if (y[0] > y[1]) {
-            swap(x, y, c, z, n, 0, 1);
+            swap(x, y, c, z, n, tc, 0, 1);
         }
         if (y[1] > y[2]) {
-            swap(x, y, c, z, n, 1, 2);
+            swap(x, y, c, z, n, tc, 1, 2);
         }
         if (y[0] > y[1]) {
-            swap(x, y, c, z, n,0, 1);
+            swap(x, y, c, z, n, tc,0, 1);
         }
     }
 
-    private static void swap(int[] x, int[] y, Color[] c, float[] z, Vector3f[] n, int i, int j) {
+    private static void swap(int[] x, int[] y, Color[] c, float[] z, Vector3f[] n, Vector2f[] tc, int i, int j) {
         int tempY = y[i];
         int tempX = x[i];
         Color tempC = c[i];
         float tempZ = z[i];
         Vector3f tempN = n[i];
+        Vector2f tempTc = tc[i];
 
         x[i] = x[j];
         y[i] = y[j];
         c[i] = c[j];
         z[i] = z[j];
         n[i] = n[j];
+        tc[i] = tc[j];
 
         x[j] = tempX;
         y[j] = tempY;
         c[j] = tempC;
         z[j] = tempZ;
         n[j] = tempN;
+        tc[j] = tempTc;
     }
 }

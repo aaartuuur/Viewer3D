@@ -3,6 +3,7 @@ package com.cgvsu.ation;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.cgvsu.math.Matrix3f;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Polygon;
 import com.cgvsu.model.Model;
@@ -47,12 +48,13 @@ public class FindNormals {
         Vector3f a = Vector3f.subtraction(vs[0], vs[1]);
         Vector3f b = Vector3f.subtraction(vs[0], vs[2]);
 
-        Vector3f c = vectorProduct(a, b);
-        if (determinant(a, b, c) < 0) {
-            c = vectorProduct(b, a);
+        Vector3f c = Vector3f.crossProduct(a, b);
+        Matrix3f m = new Matrix3f(a, b, c);
+        if (m.determinant() < 0) {
+            c = Vector3f.crossProduct(b, a);
         }
 
-        return normalize(c);
+        return c.normal();
     }
 
     public static Vector3f findVertexNormals(Set<Vector3f> vs) {
@@ -68,32 +70,6 @@ public class FindNormals {
         ys /= vs.size();
         zs /= vs.size();
 
-        return normalize(new Vector3f(xs, ys, zs));
-    }
-
-    public static double determinant(Vector3f a, Vector3f b, Vector3f c) {
-        return a.x * (b.y * c.z) - a.y * (b.x * c.z - c.x * b.z) + a.z * (b.x * c.y - c.x * b.y);
-    }
-
-    public static Vector3f normalize(Vector3f v) {
-        if (v == null) {
-            return null;
-        }
-
-        double length = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-
-        if (length == 0) {
-            return new Vector3f(0, 0, 0);
-        }
-
-        v.x /= length;
-        v.y /= length;
-        v.z /= length;
-
-        return new Vector3f(v.x, v.y, v.z);
-    }
-
-    public static Vector3f vectorProduct(Vector3f a, Vector3f b) {
-        return new Vector3f(a.y * b.z - b.y * a.z, -a.x * b.z + b.x * a.z, a.x * b.y - b.x * a.y);
+        return new Vector3f(xs, ys, zs).normal();
     }
 }

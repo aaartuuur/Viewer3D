@@ -3,10 +3,12 @@ package com.cgvsu.render_engine;
 import com.cgvsu.ation.FindNormals;
 import com.cgvsu.ation.Rasterization;
 import com.cgvsu.ation.Triangulation;
-import com.cgvsu.math.Matrix4x4;
+import com.cgvsu.math.Matrix4f;
+import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Model;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
 import javax.vecmath.Point2f;
@@ -22,15 +24,19 @@ public class RenderEngine {
             final Camera camera,
             final Model mesh,
             final int width,
-            final int height) {
-        new Rasterization(Vector3f.subtraction(camera.getTarget(), camera.getPosition()));
-        Matrix4x4 modelMatrix = rotateScaleTranslate();
-        Matrix4x4 viewMatrix = camera.getViewMatrix();
-        Matrix4x4 projectionMatrix = camera.getProjectionMatrix();
+            final int height,
+            boolean drawPolygonMesh,
+            boolean useTextureCheckBox,
+            boolean useLighting,
+            Image textureImage) {
+        new Rasterization(!useLighting ? new Vector3f() : Vector3f.subtraction(camera.getTarget(), camera.getPosition()));
+        Matrix4f modelMatrix = rotateScaleTranslate();
+        Matrix4f viewMatrix = camera.getViewMatrix();
+        Matrix4f projectionMatrix = camera.getProjectionMatrix();
 
-        Matrix4x4 modelViewProjectionMatrix = new  Matrix4x4(modelMatrix);
-        modelViewProjectionMatrix = Matrix4x4.multiply(modelViewProjectionMatrix, viewMatrix);
-        modelViewProjectionMatrix = Matrix4x4.multiply(modelViewProjectionMatrix, projectionMatrix);
+        Matrix4f modelViewProjectionMatrix = new Matrix4f(modelMatrix);
+        modelViewProjectionMatrix = Matrix4f.multiply(modelViewProjectionMatrix, viewMatrix);
+        modelViewProjectionMatrix = Matrix4f.multiply(modelViewProjectionMatrix, projectionMatrix);
 
         mesh.normals = FindNormals.findNormals(mesh);
 
@@ -40,6 +46,7 @@ public class RenderEngine {
             ArrayList<Point2f> resultPoints = new ArrayList<>();
             float[] zVertexs = new float[nVerticesInPolygon];
             int[] numVertexs = new int[nVerticesInPolygon];
+            Vector2f[] textureCoords = new Vector2f[nVerticesInPolygon];
             for (int vertexInPolygonInd = 0; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
                 int tek = mesh.polygons.get(polygonInd).getVertexIndices().get(vertexInPolygonInd);
                 numVertexs[vertexInPolygonInd] = tek;
@@ -49,22 +56,29 @@ public class RenderEngine {
                 Point2f resultPoint = vertexToPoint(Vecmath, width, height);
                 zVertexs[vertexInPolygonInd] = Vecmath.z;
                 resultPoints.add(resultPoint);
+                textureCoords[vertexInPolygonInd] = mesh.textureVertices.get(
+                        mesh.polygons.get(polygonInd).getTextureVertexIndices().get(vertexInPolygonInd));
             }
-
-//            for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
-//                graphicsContext.strokeLine(
-//                        resultPoints.get(vertexInPolygonInd - 1).x,
-//                        resultPoints.get(vertexInPolygonInd - 1).y,
-//                        resultPoints.get(vertexInPolygonInd).x,
-//                        resultPoints.get(vertexInPolygonInd).y);
-//            }
-//
-//            graphicsContext.strokeLine(
-//                    resultPoints.get(nVerticesInPolygon - 1).x,
-//                    resultPoints.get(nVerticesInPolygon - 1).y,
-//                    resultPoints.get(0).x,
-//                    resultPoints.get(0).y);
-
+            if(drawPolygonMesh) {
+                for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
+                    Rasterization.drawLine(
+                            graphicsContext,
+                            (int) resultPoints.get(vertexInPolygonInd - 1).x,
+                            (int) resultPoints.get(vertexInPolygonInd - 1).y,
+                            (int) resultPoints.get(vertexInPolygonInd).x,
+                            (int) resultPoints.get(vertexInPolygonInd).y,
+                            zVertexs[vertexInPolygonInd - 1], zVertexs[vertexInPolygonInd],
+                            Color.BLACK);
+                }
+                Rasterization.drawLine(
+                        graphicsContext,
+                        (int) resultPoints.get(nVerticesInPolygon - 1).x,
+                        (int) resultPoints.get(nVerticesInPolygon - 1).y,
+                        (int) resultPoints.get(0).x,
+                        (int) resultPoints.get(0).y,
+                        zVertexs[nVerticesInPolygon - 1], zVertexs[0],
+                        Color.BLACK);
+            }
             if (nVerticesInPolygon > 3) {
                 List<int[]> triangles = Triangulation.earClippingTriangulate(resultPoints);
 
@@ -78,23 +92,11 @@ public class RenderEngine {
                             new int[]{(int) resultPoints.get(triangl[0]).y, (int) resultPoints.get(triangl[1]).y, (int) resultPoints.get(triangl[2]).y},
                             new Color[]{Color.BLUE, Color.BLUE, Color.BLUE},
                             normals,
-                            new float[]{zVertexs[triangl[0]], zVertexs[triangl[1]], zVertexs[triangl[2]]});
+                            new float[]{zVertexs[triangl[0]], zVertexs[triangl[1]], zVertexs[triangl[2]]},
+                            textureImage,
+                            new Vector2f[]{textureCoords[triangl[0]], textureCoords[triangl[1]], textureCoords[triangl[2]]},
+                            useTextureCheckBox);
                 }
-
-//                for (int[] triangl : triangles) {
-//                    for (int vertexInPolygonInd = 1; vertexInPolygonInd < 3; vertexInPolygonInd++) {
-//                        graphicsContext.strokeLine(
-//                                resultPoints.get(triangl[vertexInPolygonInd - 1]).x,
-//                                resultPoints.get(triangl[vertexInPolygonInd - 1]).y,
-//                                resultPoints.get(triangl[vertexInPolygonInd]).x,
-//                                resultPoints.get(triangl[vertexInPolygonInd]).y);
-//                    }
-//                    graphicsContext.strokeLine(
-//                            resultPoints.get(triangl[2]).x,
-//                            resultPoints.get(triangl[2]).y,
-//                            resultPoints.get(triangl[0]).x,
-//                            resultPoints.get(triangl[0]).y);
-//                }
             } else {
                 Vector3f[] normals = new Vector3f[3];
                 normals[0] = (mesh.normals.get(0));
@@ -105,20 +107,10 @@ public class RenderEngine {
                         new int[]{(int) resultPoints.get(0).y, (int) resultPoints.get(1).y, (int) resultPoints.get(2).y},
                         new Color[]{Color.BLUE, Color.BLUE, Color.BLUE},
                         normals,
-                        new float[]{zVertexs[0], zVertexs[1], zVertexs[2]});
-//                for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
-//                    graphicsContext.strokeLine(
-//                            resultPoints.get(vertexInPolygonInd - 1).x,
-//                            resultPoints.get(vertexInPolygonInd - 1).y,
-//                            resultPoints.get(vertexInPolygonInd).x,
-//                            resultPoints.get(vertexInPolygonInd).y);
-//                }
-//
-//                graphicsContext.strokeLine(
-//                        resultPoints.get(nVerticesInPolygon - 1).x,
-//                        resultPoints.get(nVerticesInPolygon - 1).y,
-//                        resultPoints.get(0).x,
-//                        resultPoints.get(0).y);
+                        new float[]{zVertexs[0], zVertexs[1], zVertexs[2]},
+                        textureImage,
+                        new Vector2f[]{textureCoords[0], textureCoords[1], textureCoords[2]},
+                        useTextureCheckBox);
             }
 
         }

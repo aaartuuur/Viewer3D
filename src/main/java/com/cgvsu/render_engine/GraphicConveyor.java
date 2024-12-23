@@ -1,26 +1,26 @@
 package com.cgvsu.render_engine;
 
-import com.cgvsu.math.Matrix4x4;
+import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector3f;
 
 import javax.vecmath.Point2f;
 
 public class GraphicConveyor {
 
-    public static Matrix4x4 rotateScaleTranslate() {
+    public static Matrix4f rotateScaleTranslate() {
         float[] matrix = new float[]{
                 1, 0, 0, 0,
                 0, 1, 0, 0,
                 0, 0, 1, 0,
                 0, 0, 0, 1};
-        return new Matrix4x4(matrix);
+        return new Matrix4f(matrix);
     }
 
-    public static Matrix4x4 lookAt(Vector3f eye, Vector3f target) {
+    public static Matrix4f lookAt(Vector3f eye, Vector3f target) {
         return lookAt(eye, target, new Vector3f(0F, 1.0F, 0F));
     }
 
-    public static Matrix4x4 lookAt(Vector3f eye, Vector3f target, Vector3f up) {
+    public static Matrix4f lookAt(Vector3f eye, Vector3f target, Vector3f up) {
         Vector3f resultX = new Vector3f();
         Vector3f resultY = new Vector3f();
         Vector3f resultZ = new Vector3f();
@@ -39,10 +39,10 @@ public class GraphicConveyor {
                 resultX.y, resultY.y, resultZ.y, 0,
                 resultX.z, resultY.z, resultZ.z, 0,
                 -resultX.dot(eye), -resultY.dot(eye), -resultZ.dot(eye), 1};
-        return new Matrix4x4(matrix);
+        return new Matrix4f(matrix);
     }
 
-    public static Matrix4x4 perspective(
+    public static Matrix4f perspective(
             final float fov,
             final float aspectRatio,
             final float nearPlane,
@@ -55,10 +55,10 @@ public class GraphicConveyor {
         result[2][2] = (farPlane + nearPlane) / (farPlane - nearPlane);
         result[2][3] = 1.0F;
         result[3][2] = 2 * (nearPlane * farPlane) / (nearPlane - farPlane);
-        return new Matrix4x4(result);
+        return new Matrix4f(result);
     }
 
-    public static Vector3f multiplyMatrix4ByVector3(final Matrix4x4 matrix, final Vector3f vertex) {
+    public static Vector3f multiplyMatrix4ByVector3(final Matrix4f matrix, final Vector3f vertex) {
         final float x = (vertex.x * matrix.getElem(0,0)) + (vertex.y * matrix.getElem(1,0)) +
                 (vertex.z * matrix.getElem(2,0)) + matrix.getElem(3,0);
         final float y = (vertex.x * matrix.getElem(0,1)) + (vertex.y * matrix.getElem(1,1)) +

@@ -1,6 +1,6 @@
 package com.cgvsu.render_engine;
 
-import com.cgvsu.math.Matrix4x4;
+import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector3f;
 
 import static com.cgvsu.render_engine.GraphicConveyor.multiplyMatrix4ByVector3;
@@ -15,6 +15,7 @@ public class Camera {
     private float farPlane;
     private double mousePositionX;
     private double mousePositionY;
+    private String name = "Camera 1";
 
     public Camera(
             final Vector3f position,
@@ -69,10 +70,10 @@ public class Camera {
             double rotX =  (-deltaY * 0.2);
             double rotY =  (-deltaX * 0.2);
 
-            Matrix4x4 rotMatrX = Matrix4x4.rotate((float) rotX, 1, 0, 0);
-            Matrix4x4 rotMatrY = Matrix4x4.rotate((float) rotY, 0, 1, 0);
+            Matrix4f rotMatrX = Matrix4f.rotate((float) rotX, 1, 0, 0);
+            Matrix4f rotMatrY = Matrix4f.rotate((float) rotY, 0, 1, 0);
 
-            Matrix4x4 rotMatr = Matrix4x4.multiply(rotMatrX, rotMatrY);
+            Matrix4f rotMatr = Matrix4f.multiply(rotMatrX, rotMatrY);
 
             position = multiplyMatrix4ByVector3(rotMatr, position);
         }
@@ -80,13 +81,35 @@ public class Camera {
         mousePositionX = x;
         mousePositionY = y;
     }
+    public String getName() {
+        return name;
+    }
 
-    Matrix4x4 getViewMatrix() {
+    // Сеттер для имени камеры
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    Matrix4f getViewMatrix() {
         return GraphicConveyor.lookAt(position, target);
     }
 
-    Matrix4x4 getProjectionMatrix() {
+    Matrix4f getProjectionMatrix() {
         return GraphicConveyor.perspective(fov, aspectRatio, nearPlane, farPlane);
+    }
+
+    @Override
+    public Camera clone() {
+        try {
+            Camera clonedCamera = (Camera) super.clone();
+
+            clonedCamera.position = this.position.clone();
+            clonedCamera.target = this.target.clone();
+
+            return clonedCamera;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException("Ошибка клонирования объекта Camera", e);
+        }
     }
 
 }

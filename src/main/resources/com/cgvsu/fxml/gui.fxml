@@ -1,45 +1,76 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.input.KeyCodeCombination?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.canvas.Canvas?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="anchorPane" xmlns:fx="http://javafx.com/fxml" fx:controller="com.cgvsu.GuiController">
-    <MenuBar>
-        <Menu mnemonicParsing="false" text="File">
-            <MenuItem mnemonicParsing="false" onAction="#onOpenModelMenuItemClick" text="Load Model">
-            <accelerator>
-                <KeyCodeCombination alt="UP" control="DOWN" meta="UP" shift="UP" shortcut="UP" code="F"/>
-            </accelerator>
-            </MenuItem>
-        </Menu>
-        <Menu mnemonicParsing="false" text="Camera Options">
-            <MenuItem mnemonicParsing="false" onAction="#handleCameraForw" text="Up">
-                <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="W"/>
-                </accelerator>
-            </MenuItem>
-            <MenuItem mnemonicParsing="false" onAction="#handleCameraBack" text="Down">
-                <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="S"/>
-                </accelerator>
-            </MenuItem>
-            <MenuItem mnemonicParsing="false" onAction="#A" text="Down">
-                <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="A"/>
-                </accelerator>
-            </MenuItem>
-            <MenuItem mnemonicParsing="false" onAction="#D" text="Down">
-                <accelerator>
-                    <KeyCodeCombination alt="UP" control="UP" meta="UP" shift="UP" shortcut="UP" code="D"/>
-                </accelerator>
-            </MenuItem>
-        </Menu>
+<AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.cgvsu.GuiController">
+    <!-- style="-fx-background-color: #2e2e2e;" -->
+
+    <MenuBar AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <menus>
+            <Menu mnemonicParsing="false" text="File">
+                <MenuItem accelerator="Ctrl+F" mnemonicParsing="false" onAction="#onOpenModelMenuItemClick" text="Load Model" />
+                <MenuItem accelerator="Ctrl+T" mnemonicParsing="false" onAction="#onLoadTextureMenuItemClick" text="Load Texture" />
+            </Menu>
+            <Menu mnemonicParsing="false" text="Camera Options">
+                <MenuItem accelerator="W" mnemonicParsing="false" onAction="#handleCameraForw" text="Up" />
+                <MenuItem accelerator="S" mnemonicParsing="false" onAction="#handleCameraBack" text="Down" />
+                <MenuItem accelerator="A" mnemonicParsing="false" onAction="#A" text="Left" />
+                <MenuItem accelerator="D" mnemonicParsing="false" onAction="#D" text="Right" />
+                <MenuItem accelerator="Q" mnemonicParsing="false" onAction="#Q" text="Other" />
+            </Menu>
+        </menus>
     </MenuBar>
 
-    <Canvas fx:id="canvas" width="1600" height="870" AnchorPane.topAnchor="30.0"/>
+    <!-- Canvas для отрисовки -->
+    <Canvas fx:id="canvas" height="870" width="1600" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="300.0" AnchorPane.topAnchor="25.0" />
 
+    <!-- Правая панель управления с прокруткой -->
+    <ScrollPane fitToHeight="true" fitToWidth="true" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
+        <content>
+            <VBox spacing="0">
+                <padding>
+                    <Insets bottom="10" left="10" right="10" top="10" />
+                </padding>
+                <CheckBox fx:id="drawPolygonMeshCheckBox" mnemonicParsing="false" text="Рисовать полигональную сетку" />
+                <CheckBox fx:id="useTextureCheckBox" mnemonicParsing="false" text="Использовать текстуру" />
+                <CheckBox fx:id="useLightingCheckBox" mnemonicParsing="false" text="Использовать освещение" />
+                <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" text="Камеры" />
+
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Координаты:" />
+                    <TextField fx:id="xCoordinateField" promptText="x" prefWidth="50" text="0" />
+                    <TextField fx:id="yCoordinateField" promptText="y" prefWidth="50" text="0" />
+                    <TextField fx:id="zCoordinateField" promptText="z" prefWidth="50" text="50" />
+                </HBox>
+
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Направление:" />
+                    <TextField fx:id="dirXField" promptText="dirX" prefWidth="50" text="0" />
+                    <TextField fx:id="dirYField" promptText="dirY" prefWidth="50" text="0" />
+                    <TextField fx:id="dirZField" promptText="dirZ" prefWidth="50" text="0" />
+                </HBox>
+
+                <Button fx:id="addNewCameraButton" text="Добавить Новую Камеру" />
+                <Button fx:id="deleteCameraButton" text="Удалить Камеру" />
+
+                <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 0 0 0;" text="Освещение" />
+                <Button mnemonicParsing="false" text="Добавить модель освещения" />
+                <Button text="Удалить Модель Освещения" />
+
+                <!-- Добавление чекбоксов для опций -->
+                <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 0 0 0;" text="Отображение" />
+                <Button text="Удалить Нормали" />
+                <Button text="Удалить Вершины" />
+                <Button text="Удалить Полигон" />
+
+                <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 0 0 0;" text="Модели" />
+                <Button text="Добавить Модель" />
+                <Button text="Удалить Модель" />
+            </VBox>
+        </content>
+    </ScrollPane>
 </AnchorPane>

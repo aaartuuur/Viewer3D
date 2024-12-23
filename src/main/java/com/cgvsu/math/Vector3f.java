@@ -115,7 +115,7 @@ public class Vector3f implements Vector<Vector3f> {
         final float y = v1.z * v2.x - v1.x * v2.z;
         final float z = v1.x * v2.y - v1.y * v2.x;
         return new Vector3f(x, y, z);
-    }// 0 сонапрв
+    }
 
     public final void cross(Vector3f var1, Vector3f var2) {
         float var3 = var1.y * var2.z - var1.z * var2.y;

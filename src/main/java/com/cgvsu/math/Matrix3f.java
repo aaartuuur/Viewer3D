@@ -10,14 +10,8 @@ public class Matrix3f {
         this.mat = mat;
     }
 
-    public Matrix3f() {
-        this.mat = new float[SIZE][SIZE];
-    }
-    public Matrix3f(float num) {
-        this.mat = new float[SIZE][SIZE];
-        for (int i = 0; i < SIZE; i++) {
-            this.mat[i][i] = num;
-        }
+    public Matrix3f(final Vector3f a, final Vector3f b, final Vector3f c){
+        mat = new float[][]{{a.x, a.y, a.z}, {b.x, b.y, b.z}, {c.x, c.y, c.z},};
     }
     private float[][] mat;
     static final private int SIZE = 3;
