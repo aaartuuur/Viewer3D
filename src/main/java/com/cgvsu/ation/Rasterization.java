@@ -15,7 +15,7 @@ public class Rasterization {
 
     static Vector3f ray;
     static final double k = 0.6;
-    static float[][] holst;
+    static float[][] holst;//zbuf
 
     public Rasterization(Vector3f camera) {
         Screen screen = Screen.getPrimary();
@@ -129,8 +129,8 @@ public class Rasterization {
                         u = Math.max(0, Math.min(1, u));
                         v = Math.max(0, Math.min(1, v));
 
-                        int xt = (int) (u * textureImage.getWidth());
-                        int yt = (int) (v * textureImage.getHeight());
+                        int xt = (int) ((1-u) * textureImage.getWidth());
+                        int yt = (int) ((1-v) * textureImage.getHeight());
 
                         xt = (int) Math.max(0, Math.min(textureImage.getWidth() - 1, xt));
                         yt = (int) Math.max(0, Math.min(textureImage.getHeight() - 1, yt));
@@ -163,8 +163,8 @@ public class Rasterization {
                         u = Math.max(0, Math.min(1, u));
                         v = Math.max(0, Math.min(1, v));
 
-                        int xt = (int) (u * textureImage.getWidth());
-                        int yt = (int) (v * textureImage.getHeight());
+                        int xt = (int) ((1-u) * textureImage.getWidth());
+                        int yt = (int) ((1-v) * textureImage.getHeight());
 
                         xt = (int) Math.max(0, Math.min(textureImage.getWidth() - 1, xt));
                         yt = (int) Math.max(0, Math.min(textureImage.getHeight() - 1, yt));
@@ -186,7 +186,7 @@ public class Rasterization {
         float len = barycentricCoords[0] * zBuf[0] +
                 barycentricCoords[1] * zBuf[1] +
                 barycentricCoords[2] * zBuf[2];
-        if (len < holst[y][x]) {
+        if ((Math.abs(len - Math.abs(holst[y][x])) < 0.00001F && holst[y][x] > 0) || Math.abs(holst[y][x])-len >= 0.00001F) {
             holst[y][x] = len;
             return true;
         }
@@ -196,8 +196,8 @@ public class Rasterization {
         if (x >= holst[0].length || y >= holst.length || x < 0 || y < 0) {
             return false;
         }
-        if (z < holst[y][x]) {
-            holst[y][x] = z-0.000001F;
+        if ((Math.abs(z - Math.abs(holst[y][x])) < 0.00001F && holst[y][x] > 0) || Math.abs(holst[y][x])-z >= 0.00001F) {
+            holst[y][x] = -z;
             return true;
         }
         return false;

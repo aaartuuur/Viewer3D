@@ -29,7 +29,7 @@ public class RenderEngine {
             boolean useTextureCheckBox,
             boolean useLighting,
             Image textureImage) {
-        new Rasterization(!useLighting ? new Vector3f() : Vector3f.subtraction(camera.getTarget(), camera.getPosition()));
+        new Rasterization(!useLighting ? new Vector3f() : Vector3f.subtraction(camera.getTarget(), camera.getPosition()));//static
         Matrix4f modelMatrix = rotateScaleTranslate();
         Matrix4f viewMatrix = camera.getViewMatrix();
         Matrix4f projectionMatrix = camera.getProjectionMatrix();
