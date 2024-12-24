@@ -4,6 +4,7 @@ import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Model;
 import com.cgvsu.objreader.ObjReader;
 import com.cgvsu.render_engine.Camera;
+import com.cgvsu.render_engine.Lamp;
 import com.cgvsu.render_engine.RenderEngine;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -11,8 +12,8 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
@@ -20,6 +21,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,6 +31,8 @@ import java.util.List;
 
 public class GuiController {
     final private float TRANSLATION = 1.5F;
+    public ColorPicker colorPicker;
+    public Slider brightnessSlider;
 
     @FXML
     AnchorPane anchorPane;
@@ -85,11 +89,11 @@ public class GuiController {
     private TextField dirZField;
 
     Camera activeCamera = new Camera(
-            new Vector3f(0, 0, 200),
+            new Vector3f(0, 0, 75),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
     private List<Camera> cameras = new ArrayList<>(List.of(activeCamera));
-    private List<Vector3f> lights = new ArrayList<>();
+    private List<Lamp> lights = new ArrayList<>();
 
     private Timeline timeline;
 
@@ -162,12 +166,28 @@ public class GuiController {
         // Добавляем обработчики событий мыши
         canvas.setOnMouseMoved(event -> activeCamera.rotateCam(event.getX(), event.getY(), false));
         canvas.setOnMouseDragged(event -> activeCamera.rotateCam(event.getX(), event.getY(), event.isPrimaryButtonDown()));
+
+        loadDefaultModel();
+    }
+
+    private void loadDefaultModel() {
+        String filePath = "caracal_cube.obj";
+
+        try {
+            Path fileName = Path.of(filePath);
+            String fileContent = Files.readString(fileName);
+            mesh = ObjReader.read(fileContent);
+            System.out.println("Model loaded successfully from: " + filePath);
+        } catch (IOException exception) {
+            System.err.println("Error loading model from path: " + filePath);
+            exception.printStackTrace();
+        }
     }
 
     private void addNewLight(){
-        Vector3f newLight = new Vector3f(Float.parseFloat(xCoordinateLight.getText()),
+        Lamp newLight = new Lamp(new Vector3f(Float.parseFloat(xCoordinateLight.getText()),
                 Float.parseFloat(yCoordinateLight.getText()),
-                Float.parseFloat(zCoordinateLight.getText()));
+                Float.parseFloat(zCoordinateLight.getText())), Lamp.convert(colorPicker.getValue()));
         lights.add(newLight);
     }
     private void addNewCamera() {

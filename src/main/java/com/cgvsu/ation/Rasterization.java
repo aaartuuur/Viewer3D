@@ -2,6 +2,7 @@ package com.cgvsu.ation;
 
 import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.render_engine.Lamp;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
@@ -14,12 +15,12 @@ import java.util.List;
 
 public class Rasterization {
 
-    static List<Vector3f> lightsVectors;
+    static List<Lamp> lightsVectors;
     static Vector3f ray;
     static final double k = 0.6;
     static float[][] holst;//zbuf
 
-    public Rasterization(Vector3f camera, List<Vector3f> lights) {
+    public Rasterization(Vector3f camera, List<Lamp> lights) {
         Screen screen = Screen.getPrimary();
         int width = (int) screen.getBounds().getWidth();
         int height = (int) screen.getBounds().getHeight();
@@ -139,7 +140,7 @@ public class Rasterization {
                         yt = (int) Math.max(0, Math.min(textureImage.getHeight() - 1, yt));
 
                         Color textureColor = pixelReader.getColor(xt, yt);
-                        pixelWriter.setColor(x, y, textureColor);
+                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, textureColor, normals));
                     }else {
                         pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals));
                     }
@@ -173,7 +174,7 @@ public class Rasterization {
                         yt = (int) Math.max(0, Math.min(textureImage.getHeight() - 1, yt));
 
                         Color textureColor = pixelReader.getColor(xt, yt);
-                        pixelWriter.setColor(x, y, textureColor);
+                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, textureColor, normals));
                     }else {
                         pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals));
                     }
@@ -200,7 +201,7 @@ public class Rasterization {
             return false;
         }
         if (holst[y][x]>z) {
-            holst[y][x] = z-0.00001F;
+            holst[y][x] = z-0.000001F;;
             return true;
         }
         return false;
@@ -249,10 +250,52 @@ public class Rasterization {
                 barycentricCoords[1] * colors[1].getBlue() +
                 barycentricCoords[2] * colors[2].getBlue();
 
+        double redLamp = 0;
+        double greenLamp = 0;
+        double blueLamp = 0;
+        for (Lamp lamp : lightsVectors) {
+            Vector3f lightDirection = Vector3f.subtraction(lamp.coordinates, new Vector3f(0, 0, 0)); // поменять на координаты обЪекта
+
+
+            float lightIntensity = -1 * Vector3f.dotProduct(vectorLight, lightDirection.equals(new Vector3f()) ? new Vector3f(): lightDirection.normal()); // Интенсивность света
+
+            // Применение освещения к цвету
+            redLamp = Math.max(lamp.color.getRed() * lightIntensity, redLamp);
+            greenLamp = Math.max(lamp.color.getGreen() * lightIntensity, greenLamp);
+            blueLamp = Math.max(lamp.color.getBlue() * lightIntensity, blueLamp);
+        }
         return new Color(
-                Math.max(0, Math.min(1, red * (1 - k) + red * k * l)),
-                Math.max(0, Math.min(1, green * (1 - k) + green * k * l)),
-                Math.max(0, Math.min(1, blue * (1 - k) + blue * k * l)),
+                Math.max(0, Math.min(1, red * (1 - k) + red * k * l + 0.003*k*redLamp)),
+                Math.max(0, Math.min(1, green * (1 - k) + green * k * l + 0.003*k*greenLamp)),
+                Math.max(0, Math.min(1, blue * (1 - k) + blue * k * l + 0.003*k*blueLamp)),
+                1);
+    }
+
+    private static Color getColor(float[] barycentricCoords, Color color, Vector3f[] normals) {
+        Vector3f vectorLight = normals[0].multiply(barycentricCoords[0]);
+        vectorLight.add(normals[1].multiply(barycentricCoords[1]));
+        vectorLight.add(normals[2].multiply(barycentricCoords[2]));
+        vectorLight.normalize();
+        final float l = -1 * Vector3f.dotProduct(vectorLight, ray.equals(new Vector3f()) ? new Vector3f(): ray.normal());
+
+        double redLamp = 0;
+        double greenLamp = 0;
+        double blueLamp = 0;
+        for (Lamp lamp : lightsVectors) {
+            Vector3f lightDirection = Vector3f.subtraction(lamp.coordinates, new Vector3f(0, 0, 0)); // поменять на координаты обЪекта
+
+
+            float lightIntensity = -1 * Vector3f.dotProduct(vectorLight, lightDirection.equals(new Vector3f()) ? new Vector3f(): lightDirection.normal()); // Интенсивность света
+
+            // Применение освещения к цвету
+            redLamp = Math.max(lamp.color.getRed() * lightIntensity, redLamp);
+            greenLamp = Math.max(lamp.color.getGreen() * lightIntensity, greenLamp);
+            blueLamp = Math.max(lamp.color.getBlue() * lightIntensity, blueLamp);
+        }
+        return new Color(
+                Math.max(0, Math.min(1, color.getRed() * (1 - k) + color.getRed() * k * l + 0.005*k*redLamp)),
+                Math.max(0, Math.min(1, color.getGreen() * (1 - k) + color.getGreen() * k * l + 0.005*k*greenLamp)),
+                Math.max(0, Math.min(1, color.getBlue() * (1 - k) + color.getBlue() * k * l + 0.005*k*blueLamp)),
                 1);
     }
 
