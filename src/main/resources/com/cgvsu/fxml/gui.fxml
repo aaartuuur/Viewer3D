@@ -70,6 +70,16 @@
                 <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 0 0 0;" text="Модели" />
                 <Button text="Добавить Модель" />
                 <Button text="Удалить Модель" />
+
+                <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" text="Свет" />
+
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Координаты:" />
+                    <TextField fx:id="xCoordinateLight" promptText="x" prefWidth="50" text="0" />
+                    <TextField fx:id="yCoordinateLight" promptText="y" prefWidth="50" text="0" />
+                    <TextField fx:id="zCoordinateLight" promptText="z" prefWidth="50" text="50" />
+                </HBox>
+                <Button fx:id="addNewLightButton" text="Добавить Новый свет" />
             </VBox>
         </content>
     </ScrollPane>

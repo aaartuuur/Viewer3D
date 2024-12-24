@@ -52,6 +52,9 @@ public class GuiController {
     private Button addNewCameraButton;
 
     @FXML
+    private Button addNewLightButton;
+
+    @FXML
     private Button deleteCameraButton;
 
     @FXML
@@ -64,6 +67,15 @@ public class GuiController {
     private TextField zCoordinateField;
 
     @FXML
+    private TextField xCoordinateLight;
+
+    @FXML
+    private TextField yCoordinateLight;
+
+    @FXML
+    private TextField zCoordinateLight;
+
+    @FXML
     private TextField dirXField;
 
     @FXML
@@ -73,10 +85,11 @@ public class GuiController {
     private TextField dirZField;
 
     Camera activeCamera = new Camera(
-            new Vector3f(0, 0, 50),
+            new Vector3f(0, 0, 200),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
     private List<Camera> cameras = new ArrayList<>(List.of(activeCamera));
+    private List<Vector3f> lights = new ArrayList<>();
 
     private Timeline timeline;
 
@@ -109,6 +122,10 @@ public class GuiController {
             addNewCamera();
         });
 
+        addNewLightButton.setOnAction(event -> {
+            addNewLight();
+        });
+
         deleteCameraButton.setOnAction(event -> {
             if (cameras.size()>1) {
                 deleteCamera();
@@ -134,7 +151,8 @@ public class GuiController {
                         drawPolygonMeshCheckBox.isSelected(),
                         useTextureCheckBox.isSelected(),
                         useLightingCheckBox.isSelected(),
-                        textureImage);
+                        textureImage,
+                        lights);
             }
         });
 
@@ -146,6 +164,12 @@ public class GuiController {
         canvas.setOnMouseDragged(event -> activeCamera.rotateCam(event.getX(), event.getY(), event.isPrimaryButtonDown()));
     }
 
+    private void addNewLight(){
+        Vector3f newLight = new Vector3f(Float.parseFloat(xCoordinateLight.getText()),
+                Float.parseFloat(yCoordinateLight.getText()),
+                Float.parseFloat(zCoordinateLight.getText()));
+        lights.add(newLight);
+    }
     private void addNewCamera() {
         Camera newCamera = new Camera(
                 new Vector3f(Float.parseFloat(xCoordinateField.getText()),
@@ -253,7 +277,8 @@ public class GuiController {
                 drawPolygonMeshCheckBox.isSelected(),
                 useTextureCheckBox.isSelected(),
                 useLightingCheckBox.isSelected(),
-                textureImage);
+                textureImage,
+                lights);
     }
 
 }

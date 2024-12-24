@@ -10,19 +10,22 @@ import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class Rasterization {
 
+    static List<Vector3f> lightsVectors;
     static Vector3f ray;
     static final double k = 0.6;
     static float[][] holst;//zbuf
 
-    public Rasterization(Vector3f camera) {
+    public Rasterization(Vector3f camera, List<Vector3f> lights) {
         Screen screen = Screen.getPrimary();
         int width = (int) screen.getBounds().getWidth();
         int height = (int) screen.getBounds().getHeight();
         holst = new float[height][width];
         ray = camera.clone();
+        lightsVectors = lights;
         for (int i = 0; i < holst.length; i++) {
             Arrays.fill(holst[i], Float.MAX_VALUE);
         }
@@ -186,7 +189,7 @@ public class Rasterization {
         float len = barycentricCoords[0] * zBuf[0] +
                 barycentricCoords[1] * zBuf[1] +
                 barycentricCoords[2] * zBuf[2];
-        if ((Math.abs(len - Math.abs(holst[y][x])) < 0.00001F && holst[y][x] > 0) || Math.abs(holst[y][x])-len >= 0.00001F) {
+        if (holst[y][x]>len) {
             holst[y][x] = len;
             return true;
         }
@@ -196,8 +199,8 @@ public class Rasterization {
         if (x >= holst[0].length || y >= holst.length || x < 0 || y < 0) {
             return false;
         }
-        if ((Math.abs(z - Math.abs(holst[y][x])) < 0.00001F && holst[y][x] > 0) || Math.abs(holst[y][x])-z >= 0.00001F) {
-            holst[y][x] = -z;
+        if (holst[y][x]>z) {
+            holst[y][x] = z-0.00001F;
             return true;
         }
         return false;
@@ -235,6 +238,7 @@ public class Rasterization {
         vectorLight.add(normals[2].multiply(barycentricCoords[2]));
         vectorLight.normalize();
         final float l = -1 * Vector3f.dotProduct(vectorLight, ray.equals(new Vector3f()) ? new Vector3f(): ray.normal());
+
         final double red = barycentricCoords[0] * colors[0].getRed() +
                 barycentricCoords[1] * colors[1].getRed() +
                 barycentricCoords[2] * colors[2].getRed();
