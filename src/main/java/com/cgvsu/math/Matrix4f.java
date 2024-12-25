@@ -52,6 +52,14 @@ public class Matrix4f {
         return mat;
     }
 
+    public static Matrix4f identityM(){
+        return new Matrix4f(
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1);
+    }
+
     public static Matrix4f add(final Matrix4f m1, final Matrix4f m2){
         Matrix4f res = new Matrix4f(new float[SIZE][SIZE]);
         for(int row = 0; row<SIZE; row++){
