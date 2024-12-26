@@ -17,6 +17,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -41,6 +43,8 @@ public class GuiController {
     private Canvas canvas;
     @FXML
     private CheckBox drawPolygonMeshCheckBox;
+    @FXML
+    private ToggleButton themeToggle;
 
     @FXML
     private CheckBox useTextureCheckBox;
@@ -114,6 +118,15 @@ public class GuiController {
                 System.out.println("Текстура не загружена, галочка снята.");
             } else {
                 System.out.println("Использовать текстуру: " + isNowSelected);
+            }
+        });
+        themeToggle.setOnAction(event -> {
+            if (themeToggle.isSelected()) {
+                themeToggle.setText("Светлая тема");
+                applyDarkTheme();
+            } else {
+                themeToggle.setText("Тёмная тема");
+                applyLightTheme();
             }
         });
 
@@ -211,7 +224,51 @@ public class GuiController {
         cameras.remove(activeCamera);
         Q(new ActionEvent());
     }
+    @FXML
+    private void applyLightTheme() {
+        anchorPane.setStyle(
+                "-fx-background-color: white;" +
+                        "-fx-text-fill: black;"
+        );
 
+        themeToggle.setStyle(
+                "-fx-background-color: #E0E0E0;" +
+                        "-fx-text-fill: black;"
+        );
+        drawContent();
+
+    }
+    private void drawContent() {
+        javafx.scene.paint.Color backgroundColor = themeToggle.isSelected() ? javafx.scene.paint.Color.web("#2B2B2B") : javafx.scene.paint.Color.WHITE;
+        javafx.scene.paint.Color drawColor = themeToggle.isSelected() ? javafx.scene.paint.Color.WHITE : Color.BLACK;
+
+        var gc = canvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        gc.setFill(backgroundColor);
+        gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
+        gc.setStroke(drawColor);
+        gc.setLineWidth(1);
+        for (int i = 0; i < canvas.getWidth(); i += 50) {
+            gc.strokeLine(i, 0, i, canvas.getHeight());
+        }
+        for (int j = 0; j < canvas.getHeight(); j += 50) {
+            gc.strokeLine(0, j, canvas.getWidth(), j);
+        }
+    }
+    private void applyDarkTheme(){
+        anchorPane.setStyle(
+                "-fx-background-color: #2B2B2B;" +
+                        "-fx-text-fill: white;"
+        );
+
+        themeToggle.setStyle(
+                "-fx-background-color: #3C3F41;" +
+                        "-fx-text-fill: white;"
+        );
+        drawContent();
+
+    }
     @FXML
     private void onOpenModelMenuItemClick() {
         FileChooser fileChooser = new FileChooser();
