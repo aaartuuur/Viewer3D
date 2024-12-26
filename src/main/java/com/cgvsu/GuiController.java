@@ -5,6 +5,7 @@ import com.cgvsu.model.Model;
 import com.cgvsu.objreader.ObjReader;
 import com.cgvsu.render_engine.Camera;
 import com.cgvsu.render_engine.Lamp;
+import com.cgvsu.render_engine.Parametrs;
 import com.cgvsu.render_engine.RenderEngine;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -96,6 +97,8 @@ public class GuiController {
             new Vector3f(0, 0, 120),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
+
+    Parametrs parametrs = new Parametrs(false, false, true, 0.01F);
     private List<Camera> cameras = new ArrayList<>(List.of(activeCamera));
     private List<Lamp> lights = new ArrayList<>();
 
@@ -104,22 +107,37 @@ public class GuiController {
 
     @FXML
     private void initialize() {
+        colorPicker.setValue(javafx.scene.paint.Color.RED);     git 
+
         drawPolygonMeshCheckBox.setSelected(false);
         useTextureCheckBox.setSelected(false);
         useLightingCheckBox.setSelected(true);
 
         drawPolygonMeshCheckBox.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
+            parametrs.drawPolygonMash = isNowSelected;
             System.out.println("Рисовать полигональную сетку: " + isNowSelected);
         });
 
         useTextureCheckBox.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
             if (textureImage == null && isNowSelected) {
                 useTextureCheckBox.setSelected(false);
+                parametrs.useTexture = false;
                 System.out.println("Текстура не загружена, галочка снята.");
             } else {
+                parametrs.useTexture = isNowSelected;
                 System.out.println("Использовать текстуру: " + isNowSelected);
             }
         });
+
+        useLightingCheckBox.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
+            parametrs.useLighting = isNowSelected;
+            System.out.println("Использовать освещение: " + isNowSelected);
+        });
+
+        brightnessSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            parametrs.brightnessLamp = newValue.floatValue();
+        });
+
         themeToggle.setOnAction(event -> {
             if (themeToggle.isSelected()) {
                 themeToggle.setText("Светлая тема");
@@ -128,10 +146,6 @@ public class GuiController {
                 themeToggle.setText("Тёмная тема");
                 applyLightTheme();
             }
-        });
-
-        useLightingCheckBox.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
-            System.out.println("Использовать освещение: " + isNowSelected);
         });
 
 
@@ -165,9 +179,7 @@ public class GuiController {
             if (mesh != null) {
                 RenderEngine.render(canvas.getGraphicsContext2D(), activeCamera,
                         mesh, (int) width, (int) height,
-                        drawPolygonMeshCheckBox.isSelected(),
-                        useTextureCheckBox.isSelected(),
-                        useLightingCheckBox.isSelected(),
+                        parametrs,
                         textureImage,
                         lights);
             }
@@ -351,9 +363,7 @@ public class GuiController {
 
         RenderEngine.render(canvas.getGraphicsContext2D(), activeCamera,
                 mesh, (int) canvas.getWidth(), (int) canvas.getHeight(),
-                drawPolygonMeshCheckBox.isSelected(),
-                useTextureCheckBox.isSelected(),
-                useLightingCheckBox.isSelected(),
+                parametrs,
                 textureImage,
                 lights);
     }

@@ -71,7 +71,7 @@
                 <Button text="Удалить Модель"/>
 
                 <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" text="Свет"/>
-                <ColorPicker fx:id="colorPicker"/>
+                <ColorPicker fx:id="colorPicker" minHeight="25" />
 
                 <HBox alignment="CENTER_LEFT">
                     <Label text="Координаты:"/>
@@ -79,7 +79,7 @@
                     <TextField fx:id="yCoordinateLight" promptText="y" prefWidth="50" text="0"/>
                     <TextField fx:id="zCoordinateLight" promptText="z" prefWidth="50" text="50"/>
                 </HBox>
-                <Slider fx:id="brightnessSlider" max="1" value="0.5" majorTickUnit="0.1" minorTickCount="0" showTickMarks="true"/>
+                <Slider fx:id="brightnessSlider" max="0.02" value="0.01" majorTickUnit="0.1" minorTickCount="0" showTickMarks="true"/>
                 <Button fx:id="addNewLightButton" text="Добавить Новый свет"/>
                 <ToggleButton fx:id="themeToggle" text="Тёмная тема"/>
 

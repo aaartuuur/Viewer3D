@@ -25,12 +25,10 @@ public class RenderEngine {
             final Model mesh,
             final int width,
             final int height,
-            boolean drawPolygonMesh,
-            boolean useTextureCheckBox,
-            boolean useLighting,
+            Parametrs parametrs,
             Image textureImage,
             List<Lamp> lights) {
-        new Rasterization(!useLighting ? new Vector3f() : Vector3f.subtraction(camera.getTarget(), camera.getPosition()), lights);//static
+        new Rasterization(!parametrs.useLighting ? new Vector3f() : Vector3f.subtraction(camera.getTarget(), camera.getPosition()), lights);//static
         Matrix4f modelMatrix = rotateScaleTranslate();
         Matrix4f viewMatrix = camera.getViewMatrix();
         Matrix4f projectionMatrix = camera.getProjectionMatrix();
@@ -60,7 +58,7 @@ public class RenderEngine {
                 textureCoords[vertexInPolygonInd] = mesh.textureVertices.get(
                         mesh.polygons.get(polygonInd).getTextureVertexIndices().get(vertexInPolygonInd));
             }
-            if(drawPolygonMesh) {
+            if(parametrs.drawPolygonMash) {
                 for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
                     Rasterization.drawLine(
                             graphicsContext,
@@ -96,7 +94,7 @@ public class RenderEngine {
                             new float[]{zVertexs[triangl[0]], zVertexs[triangl[1]], zVertexs[triangl[2]]},
                             textureImage,
                             new Vector2f[]{textureCoords[triangl[0]], textureCoords[triangl[1]], textureCoords[triangl[2]]},
-                            useTextureCheckBox);
+                            parametrs);
                 }
             } else {
                 Vector3f[] normals = new Vector3f[3];
@@ -111,7 +109,7 @@ public class RenderEngine {
                         new float[]{zVertexs[0], zVertexs[1], zVertexs[2]},
                         textureImage,
                         new Vector2f[]{textureCoords[0], textureCoords[1], textureCoords[2]},
-                        useTextureCheckBox);
+                        parametrs);
             }
 
         }

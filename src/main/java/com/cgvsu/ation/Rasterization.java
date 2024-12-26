@@ -3,6 +3,7 @@ package com.cgvsu.ation;
 import com.cgvsu.math.Vector2f;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.render_engine.Lamp;
+import com.cgvsu.render_engine.Parametrs;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
@@ -107,7 +108,7 @@ public class Rasterization {
             float[] vertexsZBuf,
             Image textureImage,
             Vector2f[] textureCoords,
-            boolean textureDraw) {
+            Parametrs parametrs) {
 
         final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
         final PixelReader pixelReader = textureImage == null ? null : textureImage.getPixelReader();
@@ -122,7 +123,7 @@ public class Rasterization {
             for (int x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
                 float[] barizenticCoordinate = barycentricCalculator(x, y, arrX, arrY);
                 if (zBufer(x, y, vertexsZBuf, barizenticCoordinate)) {
-                    if (textureDraw){
+                    if (parametrs.useTexture){
                         float u = barizenticCoordinate[0] * textureCoords[0].x +
                                 barizenticCoordinate[1] * textureCoords[1].x +
                                 barizenticCoordinate[2] * textureCoords[2].x;
@@ -138,9 +139,9 @@ public class Rasterization {
                         yt = (int) Math.max(0, Math.min(textureImage.getHeight() - 1, yt));
 
                         Color textureColor = pixelReader.getColor(xt, yt);
-                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, textureColor, normals));
+                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, textureColor, normals, parametrs.brightnessLamp));
                     }else {
-                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals));
+                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals, parametrs.brightnessLamp));
                     }
                 }
             }
@@ -154,7 +155,7 @@ public class Rasterization {
             for (int x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
                 float[] barizenticCoordinate = barycentricCalculator(x, y, arrX, arrY);
                 if (zBufer(x, y, vertexsZBuf, barizenticCoordinate)) {
-                    if (textureDraw){
+                    if (parametrs.useTexture){
                         float u = barizenticCoordinate[0] * textureCoords[0].x +
                                 barizenticCoordinate[1] * textureCoords[1].x +
                                 barizenticCoordinate[2] * textureCoords[2].x;
@@ -169,9 +170,9 @@ public class Rasterization {
                         yt = (int) Math.max(0, Math.min(textureImage.getHeight() - 1, yt));
 
                         Color textureColor = pixelReader.getColor(xt, yt);
-                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, textureColor, normals));
+                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, textureColor, normals, parametrs.brightnessLamp));
                     }else {
-                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals));
+                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals, parametrs.brightnessLamp));
                     }
                 }
             }
@@ -206,7 +207,7 @@ public class Rasterization {
             holst[y][x] = z - 0.000002F;
             return true;
         }
-        return false;git
+        return false;
     }
 
     private static float determinator(int[][] arr) {
@@ -239,7 +240,7 @@ public class Rasterization {
         return new float[]{w, v, u};
     }
 
-    private static Color getColor(float[] barycentricCoords, Color[] colors, Vector3f[] normals) {
+    private static Color getColor(float[] barycentricCoords, Color[] colors, Vector3f[] normals, float brightness) {
         Vector3f vectorLight = normals[0].multiply(barycentricCoords[0]);
         vectorLight.add(normals[1].multiply(barycentricCoords[1]));
         vectorLight.add(normals[2].multiply(barycentricCoords[2]));
@@ -270,13 +271,13 @@ public class Rasterization {
             blueLamp = Math.max(lamp.color.getBlue() * lightIntensity, blueLamp);
         }
         return new Color(
-                Math.max(0, Math.min(1, red * (1 - k) + red * k * l + 0.003*k*redLamp)),
-                Math.max(0, Math.min(1, green * (1 - k) + green * k * l + 0.003*k*greenLamp)),
-                Math.max(0, Math.min(1, blue * (1 - k) + blue * k * l + 0.003*k*blueLamp)),
+                Math.max(0, Math.min(1, red * (1 - k) + red * k * l + brightness*k*redLamp)),
+                Math.max(0, Math.min(1, green * (1 - k) + green * k * l + brightness*k*greenLamp)),
+                Math.max(0, Math.min(1, blue * (1 - k) + blue * k * l + brightness*k*blueLamp)),
                 1);
     }
 
-    private static Color getColor(float[] barycentricCoords, Color color, Vector3f[] normals) {
+    private static Color getColor(float[] barycentricCoords, Color color, Vector3f[] normals, float brightness) {
         Vector3f vectorLight = normals[0].multiply(barycentricCoords[0]);
         vectorLight.add(normals[1].multiply(barycentricCoords[1]));
         vectorLight.add(normals[2].multiply(barycentricCoords[2]));
@@ -297,9 +298,9 @@ public class Rasterization {
             blueLamp = Math.max(lamp.color.getBlue() * lightIntensity, blueLamp);
         }
         return new Color(
-                Math.max(0, Math.min(1, color.getRed() * (1 - k) + color.getRed() * k * l + 0.005*k*redLamp)),
-                Math.max(0, Math.min(1, color.getGreen() * (1 - k) + color.getGreen() * k * l + 0.005*k*greenLamp)),
-                Math.max(0, Math.min(1, color.getBlue() * (1 - k) + color.getBlue() * k * l + 0.005*k*blueLamp)),
+                Math.max(0, Math.min(1, color.getRed() * (1 - k) + color.getRed() * k * l + brightness*k*redLamp)),
+                Math.max(0, Math.min(1, color.getGreen() * (1 - k) + color.getGreen() * k * l + brightness*k*greenLamp)),
+                Math.max(0, Math.min(1, color.getBlue() * (1 - k) + color.getBlue() * k * l + brightness*k*blueLamp)),
                 1);
     }
 
