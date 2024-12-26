@@ -33,6 +33,10 @@ public class GuiController {
     final private float TRANSLATION = 1.5F;
     public ColorPicker colorPicker;
     public Slider brightnessSlider;
+    public Button addNewModelButton;
+    public TextField xCoordinateModel;
+    public TextField yCoordinateModel;
+    public TextField zCoordinateModel;
 
     @FXML
     AnchorPane anchorPane;
@@ -50,7 +54,7 @@ public class GuiController {
     @FXML
     private CheckBox useLightingCheckBox;
 
-    private Model mesh = null;
+    private List<Model> models = new ArrayList<>();;
 
     private Image textureImage;
 
@@ -104,7 +108,7 @@ public class GuiController {
 
     @FXML
     private void initialize() {
-        colorPicker.setValue(javafx.scene.paint.Color.RED);     git 
+        colorPicker.setValue(javafx.scene.paint.Color.RED);
 
         drawPolygonMeshCheckBox.setSelected(false);
         useTextureCheckBox.setSelected(false);
@@ -144,6 +148,9 @@ public class GuiController {
                 applyLightTheme();
             }
         });
+        addNewModelButton.setOnAction(event -> {
+            addModel();
+        });
 
 
         addNewCameraButton.setOnAction(event -> {
@@ -173,7 +180,7 @@ public class GuiController {
             canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
             activeCamera.setAspectRatio((float) (width / height));
 
-            if (mesh != null) {
+            for (Model mesh:models){
                 RenderEngine.render(canvas.getGraphicsContext2D(), activeCamera,
                         mesh, (int) width, (int) height,
                         parametrs,
@@ -198,7 +205,7 @@ public class GuiController {
         try {
             Path fileName = Path.of(filePath);
             String fileContent = Files.readString(fileName);
-            mesh = ObjReader.read(fileContent);
+            models.add(ObjReader.read(fileContent));
             System.out.println("Model loaded successfully from: " + filePath);
         } catch (IOException exception) {
             System.err.println("Error loading model from path: " + filePath);
@@ -227,6 +234,30 @@ public class GuiController {
         );
         activeCamera = newCamera;
         cameras.add(activeCamera);
+    }
+
+    private void addModel() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
+
+        // Предполагаем, что у вас есть доступ к текущему окну (Stage)
+        Stage stage = (Stage) canvas.getScene().getWindow();
+        File file = fileChooser.showOpenDialog(stage);
+        if (file == null) {
+            return; // Пользователь закрыл диалог без выбора файла
+        }
+
+        Path fileName = Path.of(file.getAbsolutePath());
+
+        try {
+            String fileContent = Files.readString(fileName);
+            models.add(ObjReader.read(fileContent));
+            System.out.println("Model loaded successfully from: " + file);
+            // todo: обработка ошибок
+        } catch (IOException exception) {
+            // Обработка исключения, например, вывод сообщения об ошибке
+            exception.printStackTrace();
+        }
     }
 
     private void deleteCamera() {
@@ -293,7 +324,7 @@ public class GuiController {
 
         try {
             String fileContent = Files.readString(fileName);
-            mesh = ObjReader.read(fileContent);
+            models.add(ObjReader.read(fileContent));
             // todo: обработка ошибок
         } catch (IOException exception) {
 
@@ -358,11 +389,13 @@ public class GuiController {
     public void Q(ActionEvent actionEvent) {
         activeCamera = cameras.get(cameras.indexOf(activeCamera)+1 >= cameras.size() ? 0 : cameras.indexOf(activeCamera)+1);
 
-        RenderEngine.render(canvas.getGraphicsContext2D(), activeCamera,
-                mesh, (int) canvas.getWidth(), (int) canvas.getHeight(),
-                parametrs,
-                textureImage,
-                lights);
+        for (Model mesh:models){
+            RenderEngine.render(canvas.getGraphicsContext2D(), activeCamera,
+                    mesh, (int) canvas.getWidth(), (int) canvas.getHeight(),
+                    parametrs,
+                    textureImage,
+                    lights);
+        }
     }
 
 }

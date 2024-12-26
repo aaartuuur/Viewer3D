@@ -66,8 +66,15 @@
                 <Button text="Удалить Вершины"/>
                 <Button text="Удалить Полигон"/>
 
+
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Координаты:"/>
+                    <TextField fx:id="xCoordinateModel" promptText="x" prefWidth="50" text="0"/>
+                    <TextField fx:id="yCoordinateModel" promptText="y" prefWidth="50" text="0"/>
+                    <TextField fx:id="zCoordinateModel" promptText="z" prefWidth="50" text="50"/>
+                </HBox>
                 <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 0 0 0;" text="Модели"/>
-                <Button text="Добавить Модель"/>
+                <Button fx:id="addNewModelButton" text="Добавить Модель"/>
                 <Button text="Удалить Модель"/>
 
                 <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" text="Свет"/>
