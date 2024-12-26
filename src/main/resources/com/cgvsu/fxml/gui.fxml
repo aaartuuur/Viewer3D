@@ -98,13 +98,13 @@
                         <TitledPane text="Rotation (X, Y, Z):" collapsible="false">
                             <VBox spacing="10">
                                 <TitledPane text="X" collapsible="false">
-                                    <TextField fx:id="rotationXField" text="1"/>
+                                    <TextField fx:id="rotationXField" text="0"/>
                                 </TitledPane>
                                 <TitledPane text="Y" collapsible="false">
-                                    <TextField fx:id="rotationYField" text="1"/>
+                                    <TextField fx:id="rotationYField" text="0"/>
                                 </TitledPane>
                                 <TitledPane text="Z" collapsible="false">
-                                    <TextField fx:id="rotationZField" text="1"/>
+                                    <TextField fx:id="rotationZField" text="0"/>
                                 </TitledPane>
                             </VBox>
                         </TitledPane>
@@ -126,13 +126,13 @@
                         <TitledPane text="Translation (X, Y, Z):" collapsible="false">
                             <VBox spacing="10">
                                 <TitledPane text="X" collapsible="false">
-                                    <TextField fx:id="translationXField" text="1"/>
+                                    <TextField fx:id="translationXField" text="0"/>
                                 </TitledPane>
                                 <TitledPane text="Y" collapsible="false">
-                                    <TextField fx:id="translationYField" text="1"/>
+                                    <TextField fx:id="translationYField" text="0"/>
                                 </TitledPane>
                                 <TitledPane text="Z" collapsible="false">
-                                    <TextField fx:id="translationZField" text="1"/>
+                                    <TextField fx:id="translationZField" text="0"/>
                                 </TitledPane>
                             </VBox>
                         </TitledPane>
