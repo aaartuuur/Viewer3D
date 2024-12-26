@@ -52,6 +52,14 @@ public class Matrix4f {
         return mat;
     }
 
+    public static Matrix4f identityM(){
+        return new Matrix4f(
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1);
+    }
+
     public static Matrix4f add(final Matrix4f m1, final Matrix4f m2){
         Matrix4f res = new Matrix4f(new float[SIZE][SIZE]);
         for(int row = 0; row<SIZE; row++){
@@ -153,23 +161,6 @@ public class Matrix4f {
             }
         }
         return true;
-    }
-
-
-    public static Matrix4f rotate(float angle, float axisX, float axisY, float axisZ) {
-        double radians = (double) Math.toRadians(angle);
-        double sin = (double) Math.sin(radians);
-        double cos = (double) Math.cos(radians);
-        double oneMinusCos = 1.0 - cos;
-
-        float[][] rotationMatrix = {
-                {(float) (cos + axisX * axisX * oneMinusCos), (float) (axisX * axisY * oneMinusCos - axisZ * sin), (float) (axisX * axisZ * oneMinusCos + axisY * sin), 0},
-                {(float) (axisY * axisX * oneMinusCos + axisZ * sin), (float) (cos + axisY * axisY * oneMinusCos), (float) (axisY * axisZ * oneMinusCos - axisX * sin), 0},
-                {(float) (axisZ * axisX * oneMinusCos - axisY * sin), (float) (axisZ * axisY * oneMinusCos + axisX * sin), (float) (cos + axisZ * axisZ * oneMinusCos), 0},
-                {0, 0, 0, 1}
-        };
-
-        return new Matrix4f(rotationMatrix);
     }
 
     public float getElem(int x, int y){
