@@ -1,5 +1,7 @@
 package com.cgvsu;
 
+import com.cgvsu.affine.TranslationModel;
+import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Model;
 import com.cgvsu.objreader.ObjReader;
@@ -16,7 +18,6 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -54,7 +55,8 @@ public class GuiController {
     @FXML
     private CheckBox useLightingCheckBox;
 
-    private List<Model> models = new ArrayList<>();;
+    private List<Model> models = new ArrayList<>();
+    private int activeModelIndex = 0;
 
     private Image textureImage;
 
@@ -66,6 +68,9 @@ public class GuiController {
 
     @FXML
     private Button deleteCameraButton;
+
+    @FXML
+    private Button transformModel;
 
     @FXML
     private TextField xCoordinateField;
@@ -181,10 +186,11 @@ public class GuiController {
         });
 
         deleteCameraButton.setOnAction(event -> {
-            if (cameras.size()>1) {
+            if (cameras.size() > 1) {
                 deleteCamera();
             }
         });
+
 
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
@@ -199,11 +205,8 @@ public class GuiController {
             canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
             activeCamera.setAspectRatio((float) (width / height));
 
-            for (Model mesh:models){
-                RenderEngine.render(canvas.getGraphicsContext2D(), activeCamera,
-                        mesh, (int) width, (int) height,
-                        parametrs,
-                        textureImage,
+            for (Model mesh : models) {
+                RenderEngine.render(canvas.getGraphicsContext2D(), activeCamera, mesh, (int) canvas.getWidth(), (int) canvas.getHeight(), parametrs, textureImage,
                         lights);
             }
         });
@@ -232,12 +235,13 @@ public class GuiController {
         }
     }
 
-    private void addNewLight(){
+    private void addNewLight() {
         Lamp newLight = new Lamp(new Vector3f(Float.parseFloat(xCoordinateLight.getText()),
                 Float.parseFloat(yCoordinateLight.getText()),
                 Float.parseFloat(zCoordinateLight.getText())), Lamp.convert(colorPicker.getValue()));
         lights.add(newLight);
     }
+
     private void addNewCamera() {
         Camera newCamera = new Camera(
                 new Vector3f(Float.parseFloat(xCoordinateField.getText()),
@@ -283,6 +287,7 @@ public class GuiController {
         cameras.remove(activeCamera);
         Q(new ActionEvent());
     }
+
     @FXML
     private void applyLightTheme() {
         anchorPane.setStyle(
@@ -297,6 +302,7 @@ public class GuiController {
         drawContent();
 
     }
+
     private void drawContent() {
         javafx.scene.paint.Color backgroundColor = themeToggle.isSelected() ? javafx.scene.paint.Color.web("#2B2B2B") : javafx.scene.paint.Color.WHITE;
         javafx.scene.paint.Color drawColor = themeToggle.isSelected() ? javafx.scene.paint.Color.WHITE : Color.BLACK;
@@ -315,7 +321,8 @@ public class GuiController {
             gc.strokeLine(0, j, canvas.getWidth(), j);
         }
     }
-    private void applyDarkTheme(){
+
+    private void applyDarkTheme() {
         anchorPane.setStyle(
                 "-fx-background-color: #2B2B2B;" +
                         "-fx-text-fill: white;"
@@ -328,6 +335,7 @@ public class GuiController {
         drawContent();
 
     }
+
     @FXML
     private void onOpenModelMenuItemClick() {
         FileChooser fileChooser = new FileChooser();
@@ -349,6 +357,7 @@ public class GuiController {
 
         }
     }
+
     @FXML
     private void onLoadTextureMenuItemClick() {
         FileChooser fileChooser = new FileChooser();
@@ -388,7 +397,7 @@ public class GuiController {
         Vector3f side = new Vector3f();
         side = Vector3f.crossProduct(v, new Vector3f(0, 1, 0));
         side.normalize();
-        activeCamera.movePosition(new Vector3f(side.x * TRANSLATION/3, side.y * TRANSLATION/3, side.z * TRANSLATION/3));
+        activeCamera.movePosition(new Vector3f(side.x * TRANSLATION / 3, side.y * TRANSLATION / 3, side.z * TRANSLATION / 3));
 
 
     }
@@ -401,14 +410,14 @@ public class GuiController {
         Vector3f side = new Vector3f();
         side = Vector3f.crossProduct(v, new Vector3f(0, 1, 0));
         side.normalize();
-        activeCamera.movePosition(new Vector3f(-side.x * TRANSLATION/3, -side.y * TRANSLATION/3, -side.z * TRANSLATION/3));
+        activeCamera.movePosition(new Vector3f(-side.x * TRANSLATION / 3, -side.y * TRANSLATION / 3, -side.z * TRANSLATION / 3));
     }
 
     @FXML
     public void Q(ActionEvent actionEvent) {
-        activeCamera = cameras.get(cameras.indexOf(activeCamera)+1 >= cameras.size() ? 0 : cameras.indexOf(activeCamera)+1);
+        activeCamera = cameras.get(cameras.indexOf(activeCamera) + 1 >= cameras.size() ? 0 : cameras.indexOf(activeCamera) + 1);
 
-        for (Model mesh:models){
+        for (Model mesh : models) {
             RenderEngine.render(canvas.getGraphicsContext2D(), activeCamera,
                     mesh, (int) canvas.getWidth(), (int) canvas.getHeight(),
                     parametrs,
@@ -416,5 +425,123 @@ public class GuiController {
                     lights);
         }
     }
+
+    //    @FXML
+//    private void updateTransformations() {
+//        try {
+//            float xRotate = Float.parseFloat(rotationXField.getText());
+//            float yRotate = Float.parseFloat(rotationYField.getText());
+//            float zRotate = Float.parseFloat(rotationZField.getText());
+//
+//            float xScaleValue = Float.parseFloat(scaleXField.getText());
+//            float yScaleValue = Float.parseFloat(scaleYField.getText());
+//            float zScaleValue = Float.parseFloat(scaleZField.getText());
+//
+//            float translateXValue = Float.parseFloat(translationXField.getText());
+//            float translateYValue = Float.parseFloat(translationYField.getText());
+//            float translateZValue = Float.parseFloat(rotationZField.getText());
+//
+//            AffineTransformation updatedTransformations = new AffineTransformation(
+//                    RotationOrder.XYZ, xScaleValue, yScaleValue, zScaleValue,
+//                    xRotate, yRotate, zRotate,
+//                    translateXValue, translateYValue, translateZValue);
+//            TriangulatedModel triangulatedModel = new TriangulatedModel(getActiveModel());
+//
+//            transformedModel = new TransformedModel(triangulatedModel, updatedTransformations);
+//
+//        } catch (NumberFormatException e) {
+//
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    @FXML
+//    private void transformModel() {
+//        try {
+//            Model activeModel = getActiveModel();
+//            if (activeModel == null) {
+//                Alert alert = new Alert(Alert.AlertType.WARNING);
+//                alert.setTitle("Warning");
+//                alert.setHeaderText("No Model Loaded");
+//                alert.setContentText("Please load a model before applying transformations.");
+//                alert.showAndWait();
+//                return;
+//            }
+//            updateTransformations();
+//
+//            Model transformedMesh = transformedModel.getTransformations().transformModel(activeModel);
+//            RenderEngine.render(canvas.getGraphicsContext2D(), activeCamera, transformedMesh, (int) canvas.getWidth(), (int) canvas.getHeight(), parametrs, textureImage,
+//                    lights);
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+    public void transformModel() {
+
+        float xRotate = Float.parseFloat(rotationXField.getText());
+        float yRotate = Float.parseFloat(rotationXField.getText());
+        float zRotate = Float.parseFloat(rotationZField.getText());
+
+        float xScaleValue = Float.parseFloat(scaleXField.getText());
+        float yScaleValue = Float.parseFloat(scaleYField.getText());
+        float zScaleValue = Float.parseFloat(scaleZField.getText());
+
+        float translateXValue = Float.parseFloat(translationXField.getText());
+        float translateYValue = Float.parseFloat(translationYField.getText());
+        float translateZValue = Float.parseFloat(translationZField.getText());
+        Matrix4f translationMatrix = new Matrix4f(
+                1, 0, 0, Integer.parseInt(translationXField.getText()),
+                0, 1, 0, Integer.parseInt(translationYField.getText()),
+                0, 0, 1, Integer.parseInt(translationZField.getText()),
+                0, 0, 0, 1
+        );
+
+        Matrix4f rotationMatrixX = new Matrix4f(
+                1, 0, 0, 0,
+                0, (float)Math.cos(Math.toRadians(Float.parseFloat(rotationXField.getText()))), (float)-Math.sin(Math.toRadians(Float.parseFloat(rotationXField.getText()))), 0,
+                0, (float)Math.sin(Math.toRadians(Float.parseFloat(rotationXField.getText()))), (float)Math.cos(Math.toRadians(Float.parseFloat(rotationXField.getText()))), 0,
+                0, 0, 0, 1
+        );
+
+        Matrix4f rotationMatrixY = new Matrix4f(
+                (float)Math.cos(Math.toRadians(Float.parseFloat(rotationYField.getText()))), 0, (float)Math.sin(Math.toRadians(Float.parseFloat(rotationYField.getText()))), 0,
+                0, 1, 0, 0,
+                (float)-Math.sin(Math.toRadians(Float.parseFloat(rotationYField.getText()))), 0, (float)Math.cos(Math.toRadians(Float.parseFloat(rotationYField.getText()))), 0,
+                0, 0, 0, 1
+        );
+
+        Matrix4f rotationMatrixZ = new Matrix4f(
+                (float)Math.cos(Math.toRadians(Float.parseFloat(rotationZField.getText()))), (float)-Math.sin(Math.toRadians(Float.parseFloat(rotationZField.getText()))), 0, 0,
+                (float)Math.sin(Math.toRadians(Float.parseFloat(rotationZField.getText()))), (float)Math.cos(Math.toRadians(Float.parseFloat(rotationZField.getText()))), 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+        );
+
+        Matrix4f scaleMatrix = new Matrix4f(
+                Integer.parseInt(scaleXField.getText()), 0, 0, 0,
+                0, Integer.parseInt(scaleYField.getText()), 0, 0,
+                0, 0, Integer.parseInt(scaleZField.getText()), 0,
+                0, 0, 0, 1
+        );
+
+// Умножаем матрицы в нужном порядке (сначала масштабирование, затем вращение, затем трансляция)
+        Matrix4f modelMatrix = Matrix4f.multiply(scaleMatrix, Matrix4f.multiply(rotationMatrixX, Matrix4f.multiply(rotationMatrixY, Matrix4f.multiply(rotationMatrixZ, translationMatrix))));
+
+// Применяем полученную модельную матрицу к активной модели
+        TranslationModel.move(modelMatrix, activeModel());
+
+
+    }
+
+    private Model activeModel() {
+        for (Model mesh : models) {
+            if (mesh.isActive) {
+                return mesh;
+            }
+        }
+        return models.get(0);
+    }
+
 
 }
