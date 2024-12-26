@@ -2,29 +2,28 @@ package com.cgvsu.affine;
 
 import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.render_engine.GraphicConveyor;
 
+import java.util.ArrayList;
+import java.util.List;
 
-public class AffineTransform {
+public interface AffineTransform {
+    Matrix4f getMatrix();
 
-    private Order rotOrder = Order.XYZ;
-
-    private Vector3f translation = new Vector3f(0, 0, 0);
-    private Vector3f rotation = new Vector3f(1, 1, 1);
-    private Vector3f scale = new Vector3f(1, 1, 1);
-
-    private Matrix4f rotationMatrix = new Matrix4f(1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1);
-    private Matrix4f scaleMatrix;
-    private Matrix4f translationMatrix;
-    private Matrix4f affineMatrix = new Matrix4f(1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1);
-
-    public AffineTransform() {
+    default Vector3f transform(Vector3f v) {
+        Vector3f result = GraphicConveyor.multiplyMatrix4ByVector3(getMatrix(), v);
+        return result;
     }
 
-}
+    default List<Vector3f> transform(List<Vector3f> v) {
+        Matrix4f m = getMatrix();
+        List<Vector3f> resV = new ArrayList<>();
 
+        for (int i = 0; i < v.size(); i++) {
+            Vector3f result = GraphicConveyor.multiplyMatrix4ByVector3(m, v.get(i));
+            resV.add(result);
+        }
+
+        return resV;
+    }
+}
