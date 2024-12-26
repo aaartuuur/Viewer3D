@@ -7,6 +7,7 @@ import javax.vecmath.Point2f;
 
 public class GraphicConveyor {
 
+
     public static Matrix4f rotateScaleTranslate() {
         float[] matrix = new float[]{
                 1, 0, 0, 0,
@@ -24,6 +25,8 @@ public class GraphicConveyor {
         Vector3f resultX = new Vector3f();
         Vector3f resultY = new Vector3f();
         Vector3f resultZ = new Vector3f();
+
+
 
         resultZ.sub(target, eye);
         resultX.cross(up, resultZ);
