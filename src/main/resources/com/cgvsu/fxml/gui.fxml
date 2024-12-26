@@ -1,19 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.canvas.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
 
-<AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.cgvsu.GuiController">
+<AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.cgvsu.GuiController">
     <!-- style="-fx-background-color: #2e2e2e;" -->
 
     <MenuBar AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <menus>
             <Menu mnemonicParsing="false" text="File">
-                <MenuItem accelerator="Ctrl+F" mnemonicParsing="false" onAction="#onOpenModelMenuItemClick" text="Load Model" />
-                <MenuItem accelerator="Ctrl+T" mnemonicParsing="false" onAction="#onLoadTextureMenuItemClick" text="Load Texture" />
+                <MenuItem mnemonicParsing="false" text="Сохранить модель" />
+                <MenuItem accelerator="Ctrl+F" mnemonicParsing="false" onAction="#onOpenModelMenuItemClick" text="Загрузить модель" />
+                <MenuItem accelerator="Ctrl+T" mnemonicParsing="false" onAction="#onLoadTextureMenuItemClick" text="Загрузить тексутуру" />
             </Menu>
             <Menu mnemonicParsing="false" text="Camera Options">
                 <MenuItem accelerator="W" mnemonicParsing="false" onAction="#handleCameraForw" text="Up" />
@@ -21,6 +38,15 @@
                 <MenuItem accelerator="A" mnemonicParsing="false" onAction="#A" text="Left" />
                 <MenuItem accelerator="D" mnemonicParsing="false" onAction="#D" text="Right" />
                 <MenuItem accelerator="Q" mnemonicParsing="false" onAction="#Q" text="Other" />
+            </Menu>
+            <Menu mnemonicParsing="false" text="Settings">
+                <items>
+                    <MenuItem mnemonicParsing="false">
+                        <graphic>
+                            <ToggleButton fx:id="themeToggle" text="Тёмная тема" />
+                        </graphic>
+                    </MenuItem>
+                </items>
             </Menu>
         </menus>
     </MenuBar>
@@ -33,123 +59,143 @@
         <content>
             <VBox spacing="0">
                 <padding>
-                    <Insets bottom="10" left="10" right="10" top="10"/>
+                    <Insets bottom="10" left="10" right="10" top="10" />
                 </padding>
-                <CheckBox fx:id="drawPolygonMeshCheckBox" mnemonicParsing="false" text="Рисовать полигональную сетку"/>
-                <CheckBox fx:id="useTextureCheckBox" mnemonicParsing="false" text="Использовать текстуру"/>
-                <CheckBox fx:id="useLightingCheckBox" mnemonicParsing="false" text="Использовать освещение"/>
-                <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" text="Камеры"/>
+                <TitledPane text="Модель">
+                    <content>
+                        <VBox prefHeight="100.0" prefWidth="100.0">
+                            <children>
+                                <Button fx:id="addNewModelButton" text="Добавить новую" />
+                                <Button text="Удалить Модель" />
+                                <VBox prefHeight="200.0" prefWidth="100.0">
+                                    <children>
+                                        <CheckBox fx:id="drawPolygonMeshCheckBox" mnemonicParsing="false" text="Рисовать полигональную сетку" />
+                                        <CheckBox fx:id="useTextureCheckBox" mnemonicParsing="false" text="Использовать текстуру" />
+                                        <CheckBox fx:id="useLightingCheckBox" mnemonicParsing="false" text="Использовать освещение" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </VBox>
+                    </content>
+                </TitledPane>
+                <TitledPane text="Камеры">
+                    <content>
+                        <VBox prefHeight="100.0" prefWidth="100.0">
+                            <children>
+                        <ScrollPane prefHeight="200.0" prefWidth="200.0" />
 
-                <HBox alignment="CENTER_LEFT">
-                    <Label text="Координаты:"/>
-                    <TextField fx:id="xCoordinateField" promptText="x" prefWidth="50" text="0"/>
-                    <TextField fx:id="yCoordinateField" promptText="y" prefWidth="50" text="0"/>
-                    <TextField fx:id="zCoordinateField" promptText="z" prefWidth="50" text="50"/>
-                </HBox>
+                                      <HBox alignment="CENTER_LEFT">
+                                    <Label text="Координаты:" />
+                                    <TextField prefWidth="50" promptText="x" text="0" fx:id="xCoordinateField" />
+                                    <TextField fx:id="yCoordinateField" prefWidth="50" promptText="y" text="0" />
+                                    <TextField fx:id="zCoordinateField" prefWidth="50" promptText="z" text="50" />
+                                </HBox>
 
-                <HBox alignment="CENTER_LEFT">
-                    <Label text="Направление:"/>
-                    <TextField fx:id="dirXField" promptText="dirX" prefWidth="50" text="0"/>
-                    <TextField fx:id="dirYField" promptText="dirY" prefWidth="50" text="0"/>
-                    <TextField fx:id="dirZField" promptText="dirZ" prefWidth="50" text="0"/>
-                </HBox>
+                                                  <HBox alignment="CENTER_LEFT">
+                                    <Label text="Направление:" />
+                                    <TextField fx:id="dirXField" prefWidth="50" promptText="dirX" text="0" />
+                                    <TextField fx:id="dirYField" prefWidth="50" promptText="dirY" text="0" />
+                                    <TextField fx:id="dirZField" prefWidth="50" promptText="dirZ" text="0" />
+                                </HBox>
 
-                <Button fx:id="addNewCameraButton" text="Добавить Новую Камеру"/>
-                <Button fx:id="deleteCameraButton" text="Удалить Камеру"/>
+                                <Button fx:id="addNewCameraButton" text="Добавить Новую Камеру" />
+                                <Button fx:id="deleteCameraButton" text="Удалить Камеру" />
+                        <ScrollPane prefHeight="200.0" prefWidth="200.0">
+                           <content>
+      
+                                            <ListView fx:id="cameraListView" prefHeight="200" />
+                           </content>
+                        </ScrollPane>
 
-                <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 0 0 0;" text="Освещение"/>
-                <Button mnemonicParsing="false" text="Добавить модель освещения"/>
-                <Button text="Удалить Модель Освещения"/>
+                            </children>
+                        </VBox>
+                    </content>
+                </TitledPane>
+                <TitledPane text="Свет">
+                    <content>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                            <children>
+                                <ColorPicker fx:id="colorPicker" minHeight="25" />
 
-                <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 0 0 0;" text="Отображение"/>
-                <Button text="Удалить Нормали"/>
-                <Button text="Удалить Вершины"/>
-                <Button text="Удалить Полигон"/>
-
-
-                <HBox alignment="CENTER_LEFT">
-                    <Label text="Координаты:"/>
-                    <TextField fx:id="xCoordinateModel" promptText="x" prefWidth="50" text="0"/>
-                    <TextField fx:id="yCoordinateModel" promptText="y" prefWidth="50" text="0"/>
-                    <TextField fx:id="zCoordinateModel" promptText="z" prefWidth="50" text="50"/>
-                </HBox>
-                <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 0 0 0;" text="Модели"/>
-                <Button fx:id="addNewModelButton" text="Добавить Модель"/>
-                <Button text="Удалить Модель"/>
-
-                <Label style="-fx-font-size: 14px; -fx-font-weight: bold;" text="Свет"/>
-                <ColorPicker fx:id="colorPicker" minHeight="25" />
-
-                <HBox alignment="CENTER_LEFT">
-                    <Label text="Координаты:"/>
-                    <TextField fx:id="xCoordinateLight" promptText="x" prefWidth="50" text="0"/>
-                    <TextField fx:id="yCoordinateLight" promptText="y" prefWidth="50" text="0"/>
-                    <TextField fx:id="zCoordinateLight" promptText="z" prefWidth="50" text="50"/>
-                </HBox>
-                <Slider fx:id="brightnessSlider" max="0.02" value="0.01" majorTickUnit="0.1" minorTickCount="0" showTickMarks="true"/>
-                <Button fx:id="addNewLightButton" text="Добавить Новый свет"/>
-                <ToggleButton fx:id="themeToggle" text="Тёмная тема"/>
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label text="Координаты:" />
+                                    <TextField prefWidth="50" promptText="x" text="0" fx:id="xCoordinateLight" />
+                                    <TextField fx:id="yCoordinateLight" prefWidth="50" promptText="y" text="0" />
+                                    <TextField fx:id="zCoordinateLight" prefWidth="50" promptText="z" text="50" />
+                                </HBox>
+                                <Slider fx:id="brightnessSlider" majorTickUnit="0.1" max="0.02" minorTickCount="0" showTickMarks="true" value="0.01" />
+                                <Button fx:id="addNewLightButton" text="Добавить Новый свет" />
+                            </children>
+                        </VBox>
+                    </content>
+                </TitledPane>
 
                 <TitledPane text="Трансформация 3D-моделей">
                     <VBox spacing="10">
                         <padding>
-                            <Insets bottom="10" left="10" right="10" top="10"/>
+                            <Insets bottom="10" left="10" right="10" top="10" />
                         </padding>
-                        <TitledPane text="Rotation (X, Y, Z):" collapsible="false">
+                        <TitledPane collapsible="false" text="Rotation (X, Y, Z):">
                             <VBox spacing="10">
-                                <TitledPane text="X" collapsible="false">
-                                    <TextField fx:id="rotationXField" text="0"/>
+                                <TitledPane collapsible="false" text="X">
+                                    <TextField fx:id="rotationXField" text="0" />
                                 </TitledPane>
-                                <TitledPane text="Y" collapsible="false">
-                                    <TextField fx:id="rotationYField" text="0"/>
+                                <TitledPane collapsible="false" text="Y">
+                                    <TextField fx:id="rotationYField" text="0" />
                                 </TitledPane>
-                                <TitledPane text="Z" collapsible="false">
-                                    <TextField fx:id="rotationZField" text="0"/>
+                                <TitledPane collapsible="false" text="Z">
+                                    <TextField fx:id="rotationZField" text="0" />
                                 </TitledPane>
                             </VBox>
                         </TitledPane>
 
-                        <TitledPane text="Scale (X, Y, Z):" collapsible="false">
+                        <TitledPane collapsible="false" text="Scale (X, Y, Z):">
                             <VBox spacing="10">
-                                <TitledPane text="X" collapsible="false">
-                                    <TextField fx:id="scaleXField" text="1"/>
+                                <TitledPane collapsible="false" text="X">
+                                    <TextField fx:id="scaleXField" text="1" />
                                 </TitledPane>
-                                <TitledPane text="Y" collapsible="false">
-                                    <TextField fx:id="scaleYField" text="1"/>
+                                <TitledPane collapsible="false" text="Y">
+                                    <TextField fx:id="scaleYField" text="1" />
                                 </TitledPane>
-                                <TitledPane text="Z" collapsible="false">
-                                    <TextField fx:id="scaleZField" text="1"/>
+                                <TitledPane collapsible="false" text="Z">
+                                    <TextField fx:id="scaleZField" text="1" />
                                 </TitledPane>
                             </VBox>
                         </TitledPane>
 
-                        <TitledPane text="Translation (X, Y, Z):" collapsible="false">
+                        <TitledPane collapsible="false" text="Translation (X, Y, Z):">
                             <VBox spacing="10">
-                                <TitledPane text="X" collapsible="false">
-                                    <TextField fx:id="translationXField" text="0"/>
+                                <TitledPane collapsible="false" text="X">
+                                    <TextField fx:id="translationXField" text="0" />
                                 </TitledPane>
-                                <TitledPane text="Y" collapsible="false">
-                                    <TextField fx:id="translationYField" text="0"/>
+                                <TitledPane collapsible="false" text="Y">
+                                    <TextField fx:id="translationYField" text="0" />
                                 </TitledPane>
-                                <TitledPane text="Z" collapsible="false">
-                                    <TextField fx:id="translationZField" text="0"/>
+                                <TitledPane collapsible="false" text="Z">
+                                    <TextField fx:id="translationZField" text="0" />
                                 </TitledPane>
                             </VBox>
                         </TitledPane>
 
                         <TitledPane text="Удаление">
                             <GridPane hgap="5" vgap="5">
-                                <Label text="Удаление Вершин:"/>
+                                <Label text="Удаление Вершин:" />
                                 <TextField />
-                                <Label text="Удаление Полигонов:"/>
+                                <Label text="Удаление Полигонов:" />
                                 <TextField />
+                        <columnConstraints>
+                           <ColumnConstraints />
+                        </columnConstraints>
+                        <rowConstraints>
+                           <RowConstraints />
+                        </rowConstraints>
                             </GridPane>
                         </TitledPane>
 
                         <VBox spacing="5">
-                            <Button text="Удалить"/>
-                            <Button fx:id="transformModel" text="Transform Model"/>
-                            <Button text="Сбросить Трансформации"/>
+                            <Button text="Удалить" />
+                            <Button fx:id="transformModel" text="Transform Model" />
+                            <Button text="Сбросить Трансформации" />
                         </VBox>
                     </VBox>
                 </TitledPane>

@@ -10,6 +10,10 @@ import com.cgvsu.render_engine.RenderEngine;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TitledPane;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
@@ -57,7 +61,10 @@ public class GuiController {
     private int activeModelIndex = 0;
 
     private Image textureImage;
-
+    @FXML
+    private TitledPane cameraTitledPane;
+    @FXML
+    private ListView<Camera> cameraListView;
     @FXML
     private Button addNewCameraButton;
 
@@ -137,6 +144,8 @@ public class GuiController {
             0.0F    // translationZ
     );
     private List<Camera> cameras = new ArrayList<>(List.of(activeCamera));
+    private ObservableList<Camera> cameraObservableList;
+    private Camera activecamera;
     private List<Lamp> lights = new ArrayList<>();
 
     private Timeline timeline;
@@ -188,6 +197,21 @@ public class GuiController {
             addModel();
         });
 
+        if (activeCamera == null && !cameras.isEmpty()) {
+            activeCamera = cameras.get(0);
+        }
+        cameraObservableList = FXCollections.observableArrayList(cameras);
+
+        cameraListView.getSelectionModel().select(activeCamera);
+
+        cameraListView.setItems(cameraObservableList);
+
+        cameraListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                activeCamera = newValue;
+            }
+        });
+
 
         addNewCameraButton.setOnAction(event -> {
             addNewCamera();
@@ -198,8 +222,23 @@ public class GuiController {
         });
 
         deleteCameraButton.setOnAction(event -> {
-            if (cameras.size() > 1) {
-                deleteCamera();
+            Camera selectedCamera = cameraListView.getSelectionModel().getSelectedItem();
+            if (selectedCamera != null) {
+                cameras.remove(selectedCamera); // Удаляем из исходного списка
+                cameraObservableList.remove(selectedCamera); // Удаляем из ObservableList
+
+                if (!cameraObservableList.isEmpty()) {
+                    activeCamera = cameraObservableList.get(0); // Установка первой камеры как активной
+                    cameraListView.getSelectionModel().select(0);
+                } else {
+                    activeCamera = null; // Нет камер
+                }
+            } else {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Удаление камеры");
+                alert.setHeaderText(null);
+                alert.setContentText("Нет выбранной камеры для удаления.");
+                alert.showAndWait();
             }
         });
 
@@ -292,6 +331,7 @@ public class GuiController {
         );
         activeCamera = newCamera;
         cameras.add(activeCamera);
+        cameraObservableList.add(newCamera);
     }
 
     private void addModel() {
