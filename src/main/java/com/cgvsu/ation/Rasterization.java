@@ -130,11 +130,9 @@ public class Rasterization {
                                 barizenticCoordinate[1] * textureCoords[1].y +
                                 barizenticCoordinate[2] * textureCoords[2].y;
 
-                        u = Math.max(0, Math.min(1, u));
-                        v = Math.max(0, Math.min(1, v));
 
-                        int xt = (int) ((1-u) * textureImage.getWidth());
-                        int yt = (int) ((1-v) * textureImage.getHeight());
+                        int xt = (int) Math.floor((1-u) * textureImage.getWidth());
+                        int yt = (int) Math.floor((1-v) * textureImage.getHeight());
 
                         xt = (int) Math.max(0, Math.min(textureImage.getWidth() - 1, xt));
                         yt = (int) Math.max(0, Math.min(textureImage.getHeight() - 1, yt));
@@ -164,11 +162,8 @@ public class Rasterization {
                                 barizenticCoordinate[1] * textureCoords[1].y +
                                 barizenticCoordinate[2] * textureCoords[2].y;
 
-                        u = Math.max(0, Math.min(1, u));
-                        v = Math.max(0, Math.min(1, v));
-
-                        int xt = (int) ((1-u) * textureImage.getWidth());
-                        int yt = (int) ((1-v) * textureImage.getHeight());
+                        int xt = (int) Math.floor((1-u) * textureImage.getWidth());
+                        int yt = (int) Math.floor((1-v) * textureImage.getHeight());
 
                         xt = (int) Math.max(0, Math.min(textureImage.getWidth() - 1, xt));
                         yt = (int) Math.max(0, Math.min(textureImage.getHeight() - 1, yt));
@@ -201,10 +196,17 @@ public class Rasterization {
             return false;
         }
         if (holst[y][x]>z) {
-            holst[y][x] = z-0.000001F;;
+            if (z<0.9997919){
+                holst[y][x] = z-0.000005F;;
+                return true;
+            }else if (z>0.9999999){
+                holst[y][x] = z - 0.0000006F;
+                return true;
+            }
+            holst[y][x] = z - 0.000002F;
             return true;
         }
-        return false;
+        return false;git
     }
 
     private static float determinator(int[][] arr) {
@@ -214,23 +216,27 @@ public class Rasterization {
     }
 
     private static float[] barycentricCalculator(int x, int y, int[] arrX, int[] arrY) {
-        float generalDeterminant = determinator(new int[][]{arrX, arrY, new int[]{1, 1, 1}});
+        float v0x = arrX[2] - arrX[0];
+        float v0y = arrY[2] - arrY[0];
+        float v1x = arrX[1] - arrX[0];
+        float v1y = arrY[1] - arrY[0];
+        float v2x = x - arrX[0];
+        float v2y = y - arrY[0];
 
-        if (generalDeterminant == 0) {
-            return new float[]{1, 1, 1};
-        }
+        // Вычисление скалярных произведений
+        float dot00 = v0x * v0x + v0y * v0y;
+        float dot01 = v0x * v1x + v0y * v1y;
+        float dot02 = v0x * v2x + v0y * v2y;
+        float dot11 = v1x * v1x + v1y * v1y;
+        float dot12 = v1x * v2x + v1y * v2y;
 
-        final float coordinate0 = determinator(
-                new int[][]{new int[]{x, arrX[1], arrX[2]}, new int[]{y, arrY[1], arrY[2]}, new int[]{1, 1, 1}}) /
-                generalDeterminant;
-        final float coordinate1 = determinator(
-                new int[][]{new int[]{arrX[0], x, arrX[2]}, new int[]{arrY[0], y, arrY[2]}, new int[]{1, 1, 1}}) /
-                generalDeterminant;
-        final float coordinate2 = determinator(
-                new int[][]{new int[]{arrX[0], arrX[1], x}, new int[]{arrY[0], arrY[1], y}, new int[]{1, 1, 1}}) /
-                generalDeterminant;
+        // Вычисление барицентрических координат
+        float invDenominator = 1.0f / (dot00 * dot11 - dot01 * dot01);
+        float u = (dot11 * dot02 - dot01 * dot12) * invDenominator;
+        float v = (dot00 * dot12 - dot01 * dot02) * invDenominator;
+        float w = 1.0f - u - v;
 
-        return new float[]{coordinate0, coordinate1, coordinate2};
+        return new float[]{w, v, u};
     }
 
     private static Color getColor(float[] barycentricCoords, Color[] colors, Vector3f[] normals) {
@@ -259,7 +265,6 @@ public class Rasterization {
 
             float lightIntensity = -1 * Vector3f.dotProduct(vectorLight, lightDirection.equals(new Vector3f()) ? new Vector3f(): lightDirection.normal()); // Интенсивность света
 
-            // Применение освещения к цвету
             redLamp = Math.max(lamp.color.getRed() * lightIntensity, redLamp);
             greenLamp = Math.max(lamp.color.getGreen() * lightIntensity, greenLamp);
             blueLamp = Math.max(lamp.color.getBlue() * lightIntensity, blueLamp);
@@ -287,7 +292,6 @@ public class Rasterization {
 
             float lightIntensity = -1 * Vector3f.dotProduct(vectorLight, lightDirection.equals(new Vector3f()) ? new Vector3f(): lightDirection.normal()); // Интенсивность света
 
-            // Применение освещения к цвету
             redLamp = Math.max(lamp.color.getRed() * lightIntensity, redLamp);
             greenLamp = Math.max(lamp.color.getGreen() * lightIntensity, greenLamp);
             blueLamp = Math.max(lamp.color.getBlue() * lightIntensity, blueLamp);

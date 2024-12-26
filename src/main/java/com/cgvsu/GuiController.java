@@ -89,7 +89,7 @@ public class GuiController {
     private TextField dirZField;
 
     Camera activeCamera = new Camera(
-            new Vector3f(0, 0, 75),
+            new Vector3f(0, 0, 120),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
     private List<Camera> cameras = new ArrayList<>(List.of(activeCamera));
