@@ -96,36 +96,45 @@
                             <Insets bottom="10" left="10" right="10" top="10"/>
                         </padding>
                         <TitledPane text="Rotation (X, Y, Z):" collapsible="false">
-                            <GridPane hgap="5" vgap="5">
-                                <Label text="X:"/>
-                                <TextField text="0"/>
-                                <Label text="Y:"/>
-                                <TextField  text="0"/>
-                                <Label text="Z:"/>
-                                <TextField text="0"/>
-                            </GridPane>
+                            <VBox spacing="10">
+                                <TitledPane text="X" collapsible="false">
+                                    <TextField fx:id="rotationXField" text="1"/>
+                                </TitledPane>
+                                <TitledPane text="Y" collapsible="false">
+                                    <TextField fx:id="rotationYField" text="1"/>
+                                </TitledPane>
+                                <TitledPane text="Z" collapsible="false">
+                                    <TextField fx:id="rotationZField" text="1"/>
+                                </TitledPane>
+                            </VBox>
                         </TitledPane>
 
                         <TitledPane text="Scale (X, Y, Z):" collapsible="false">
-                            <GridPane hgap="5" vgap="5">
-                                <Label text="X:"/>
-                                <TextField  text="1"/>
-                                <Label text="Y:"/>
-                                <TextField  text="1"/>
-                                <Label text="Z:"/>
-                                <TextField  text="1"/>
-                            </GridPane>
+                            <VBox spacing="10">
+                                <TitledPane text="X" collapsible="false">
+                                    <TextField fx:id="scaleXField" text="1"/>
+                                </TitledPane>
+                                <TitledPane text="Y" collapsible="false">
+                                    <TextField fx:id="scaleYField" text="1"/>
+                                </TitledPane>
+                                <TitledPane text="Z" collapsible="false">
+                                    <TextField fx:id="scaleZField" text="1"/>
+                                </TitledPane>
+                            </VBox>
                         </TitledPane>
 
                         <TitledPane text="Translation (X, Y, Z):" collapsible="false">
-                            <GridPane hgap="5" vgap="5">
-                                <Label text="X:"/>
-                                <TextField  text="0"/>
-                                <Label text="Y:"/>
-                                <TextField  text="0"/>
-                                <Label text="Z:"/>
-                                <TextField  text="0"/>
-                            </GridPane>
+                            <VBox spacing="10">
+                                <TitledPane text="X" collapsible="false">
+                                    <TextField fx:id="translationXField" text="1"/>
+                                </TitledPane>
+                                <TitledPane text="Y" collapsible="false">
+                                    <TextField fx:id="translationYField" text="1"/>
+                                </TitledPane>
+                                <TitledPane text="Z" collapsible="false">
+                                    <TextField fx:id="translationZField" text="1"/>
+                                </TitledPane>
+                            </VBox>
                         </TitledPane>
 
                         <TitledPane text="Удаление">

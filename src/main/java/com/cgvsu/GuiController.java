@@ -94,6 +94,25 @@ public class GuiController {
     @FXML
     private TextField dirZField;
 
+    @FXML
+    private TextField rotationXField;
+    @FXML
+    private TextField rotationYField;
+    @FXML
+    private TextField rotationZField;
+    @FXML
+    private TextField scaleXField;
+    @FXML
+    private TextField scaleYField;
+    @FXML
+    private TextField scaleZField;
+    @FXML
+    private TextField translationXField;
+    @FXML
+    private TextField translationYField;
+    @FXML
+    private TextField translationZField;
+
     Camera activeCamera = new Camera(
             new Vector3f(0, 0, 120),
             new Vector3f(0, 0, 0),

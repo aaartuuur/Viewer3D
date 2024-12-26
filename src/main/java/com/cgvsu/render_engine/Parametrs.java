@@ -8,6 +8,7 @@ public class Parametrs {
     public float brightnessLamp;
 
 
+
     public Parametrs(boolean drawPolygonMash, boolean useTexture, boolean useLighting, float brightnessLamp) {
         this.drawPolygonMash=drawPolygonMash;
         this.useTexture = useTexture;
