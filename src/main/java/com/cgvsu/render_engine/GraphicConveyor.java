@@ -8,13 +8,75 @@ import javax.vecmath.Point2f;
 public class GraphicConveyor {
 
 
-    public static Matrix4f rotateScaleTranslate() {
-        float[] matrix = new float[]{
+    public static Matrix4f rotateScaleTranslate(Parametrs parametrs) {
+        // Извлекаем параметры
+        float rotationX = (float) Math.toRadians(parametrs.getRotationX()); // Поворот вокруг X (в радианах)
+        float rotationY = (float) Math.toRadians(parametrs.getRotationY()); // Поворот вокруг Y (в радианах)
+        float rotationZ = (float) Math.toRadians(parametrs.getRotationZ()); // Поворот вокруг Z (в радианах)
+        float scaleX = parametrs.getScaleX(); // Масштабирование по X
+        float scaleY = parametrs.getScaleY(); // Масштабирование по Y
+        float scaleZ = parametrs.getScaleZ(); // Масштабирование по Z
+        float translationX = parametrs.getTranslationX(); // Перемещение по X
+        float translationY = parametrs.getTranslationY(); // Перемещение по Y
+        float translationZ = parametrs.getTranslationZ(); // Перемещение по Z
+
+        float cosX = (float) Math.cos(rotationX);
+        float sinX = (float) Math.sin(rotationX);
+        float[] rotateX = new float[]{
+                1, 0, 0, 0,
+                0, cosX, -sinX, 0,
+                0, sinX, cosX, 0,
+                0, 0, 0, 1
+        };
+
+        float cosY = (float) Math.cos(rotationY);
+        float sinY = (float) Math.sin(rotationY);
+        float[] rotateY = new float[]{
+                cosY, 0, sinY, 0,
+                0, 1, 0, 0,
+                -sinY, 0, cosY, 0,
+                0, 0, 0, 1
+        };
+
+        float cosZ = (float) Math.cos(rotationZ);
+        float sinZ = (float) Math.sin(rotationZ);
+        float[] rotateZ = new float[]{
+                cosZ, -sinZ, 0, 0,
+                sinZ, cosZ, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+        };
+
+        float[] scale = new float[]{
+                scaleX, 0, 0, 0,
+                0, scaleY, 0, 0,
+                0, 0, scaleZ, 0,
+                0, 0, 0, 1
+        };
+
+        float[] translate = new float[]{
                 1, 0, 0, 0,
                 0, 1, 0, 0,
                 0, 0, 1, 0,
-                0, 0, 0, 1};
-        return new Matrix4f(matrix);
+                translationX, translationY, translationZ, 1
+        };
+
+        float[] result = multiplyMatrices(multiplyMatrices(multiplyMatrices(rotateZ, multiplyMatrices(rotateY, rotateX)), scale), translate);
+
+        return new Matrix4f(result);
+    }
+
+    // Метод для умножения двух матриц 4x4
+    private static float[] multiplyMatrices(float[] a, float[] b) {
+        float[] result = new float[16];
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                for (int k = 0; k < 4; k++) {
+                    result[i * 4 + j] += a[i * 4 + k] * b[k * 4 + j];
+                }
+            }
+        }
+        return result;
     }
 
     public static Matrix4f lookAt(Vector3f eye, Vector3f target) {

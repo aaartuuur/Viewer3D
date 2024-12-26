@@ -29,7 +29,7 @@ public class RenderEngine {
             Image textureImage,
             List<Lamp> lights) {
         new Rasterization(!parametrs.useLighting ? new Vector3f() : Vector3f.subtraction(camera.getTarget(), camera.getPosition()), lights);//static
-        Matrix4f modelMatrix = rotateScaleTranslate();
+        Matrix4f modelMatrix = rotateScaleTranslate(parametrs);
         Matrix4f viewMatrix = camera.getViewMatrix();
         Matrix4f projectionMatrix = camera.getProjectionMatrix();
 

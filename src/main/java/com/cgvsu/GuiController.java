@@ -1,7 +1,5 @@
 package com.cgvsu;
 
-import com.cgvsu.affine.TranslationModel;
-import com.cgvsu.math.Matrix4f;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Model;
 import com.cgvsu.objreader.ObjReader;
@@ -123,7 +121,21 @@ public class GuiController {
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
 
-    Parametrs parametrs = new Parametrs(false, false, true, 0.01F);
+    Parametrs parametrs = new Parametrs(
+            false,  // drawPolygonMash
+            false,  // useTexture
+            true,   // useLighting
+            0.01F,  // brightnessLamp
+            0.0F,   // rotationX
+            0.0F,   // rotationY
+            0.0F,   // rotationZ
+            1.0F,   // scaleX
+            1.0F,   // scaleY
+            1.0F,   // scaleZ
+            0.0F,   // translationX
+            0.0F,   // translationY
+            0.0F    // translationZ
+    );
     private List<Camera> cameras = new ArrayList<>(List.of(activeCamera));
     private List<Lamp> lights = new ArrayList<>();
 
@@ -188,6 +200,29 @@ public class GuiController {
         deleteCameraButton.setOnAction(event -> {
             if (cameras.size() > 1) {
                 deleteCamera();
+            }
+        });
+
+        transformModel.setOnAction(event -> {
+            try {
+                parametrs.setRotationX(Float.parseFloat(rotationXField.getText()));
+                parametrs.setRotationY(Float.parseFloat(rotationYField.getText()));
+                parametrs.setRotationZ(Float.parseFloat(rotationZField.getText()));
+
+                parametrs.setScaleX(Float.parseFloat(scaleXField.getText()));
+                parametrs.setScaleY(Float.parseFloat(scaleYField.getText()));
+                parametrs.setScaleZ(Float.parseFloat(scaleZField.getText()));
+
+                parametrs.setTranslationX(Float.parseFloat(translationXField.getText()));
+                parametrs.setTranslationY(Float.parseFloat(translationYField.getText()));
+                parametrs.setTranslationZ(Float.parseFloat(translationZField.getText()));
+
+                System.out.println("Параметры обновлены:");
+                System.out.println("Вращение: X=" + parametrs.getRotationX() + ", Y=" + parametrs.getRotationY() + ", Z=" + parametrs.getRotationZ());
+                System.out.println("Масштабирование: X=" + parametrs.getScaleX() + ", Y=" + parametrs.getScaleY() + ", Z=" + parametrs.getScaleZ());
+                System.out.println("Перемещение: X=" + parametrs.getTranslationX() + ", Y=" + parametrs.getTranslationY() + ", Z=" + parametrs.getTranslationZ());
+            } catch (NumberFormatException e) {
+                System.err.println("Ошибка: Введены некорректные данные. Убедитесь, что все поля содержат числа.");
             }
         });
 
@@ -263,11 +298,10 @@ public class GuiController {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
 
-        // Предполагаем, что у вас есть доступ к текущему окну (Stage)
         Stage stage = (Stage) canvas.getScene().getWindow();
         File file = fileChooser.showOpenDialog(stage);
         if (file == null) {
-            return; // Пользователь закрыл диалог без выбора файла
+            return;
         }
 
         Path fileName = Path.of(file.getAbsolutePath());
@@ -276,9 +310,8 @@ public class GuiController {
             String fileContent = Files.readString(fileName);
             models.add(ObjReader.read(fileContent));
             System.out.println("Model loaded successfully from: " + file);
-            // todo: обработка ошибок
+
         } catch (IOException exception) {
-            // Обработка исключения, например, вывод сообщения об ошибке
             exception.printStackTrace();
         }
     }
@@ -424,114 +457,6 @@ public class GuiController {
                     textureImage,
                     lights);
         }
-    }
-
-    //    @FXML
-//    private void updateTransformations() {
-//        try {
-//            float xRotate = Float.parseFloat(rotationXField.getText());
-//            float yRotate = Float.parseFloat(rotationYField.getText());
-//            float zRotate = Float.parseFloat(rotationZField.getText());
-//
-//            float xScaleValue = Float.parseFloat(scaleXField.getText());
-//            float yScaleValue = Float.parseFloat(scaleYField.getText());
-//            float zScaleValue = Float.parseFloat(scaleZField.getText());
-//
-//            float translateXValue = Float.parseFloat(translationXField.getText());
-//            float translateYValue = Float.parseFloat(translationYField.getText());
-//            float translateZValue = Float.parseFloat(rotationZField.getText());
-//
-//            AffineTransformation updatedTransformations = new AffineTransformation(
-//                    RotationOrder.XYZ, xScaleValue, yScaleValue, zScaleValue,
-//                    xRotate, yRotate, zRotate,
-//                    translateXValue, translateYValue, translateZValue);
-//            TriangulatedModel triangulatedModel = new TriangulatedModel(getActiveModel());
-//
-//            transformedModel = new TransformedModel(triangulatedModel, updatedTransformations);
-//
-//        } catch (NumberFormatException e) {
-//
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    @FXML
-//    private void transformModel() {
-//        try {
-//            Model activeModel = getActiveModel();
-//            if (activeModel == null) {
-//                Alert alert = new Alert(Alert.AlertType.WARNING);
-//                alert.setTitle("Warning");
-//                alert.setHeaderText("No Model Loaded");
-//                alert.setContentText("Please load a model before applying transformations.");
-//                alert.showAndWait();
-//                return;
-//            }
-//            updateTransformations();
-//
-//            Model transformedMesh = transformedModel.getTransformations().transformModel(activeModel);
-//            RenderEngine.render(canvas.getGraphicsContext2D(), activeCamera, transformedMesh, (int) canvas.getWidth(), (int) canvas.getHeight(), parametrs, textureImage,
-//                    lights);
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-    public void transformModel() {
-
-        float xRotate = Float.parseFloat(rotationXField.getText());
-        float yRotate = Float.parseFloat(rotationXField.getText());
-        float zRotate = Float.parseFloat(rotationZField.getText());
-
-        float xScaleValue = Float.parseFloat(scaleXField.getText());
-        float yScaleValue = Float.parseFloat(scaleYField.getText());
-        float zScaleValue = Float.parseFloat(scaleZField.getText());
-
-        float translateXValue = Float.parseFloat(translationXField.getText());
-        float translateYValue = Float.parseFloat(translationYField.getText());
-        float translateZValue = Float.parseFloat(translationZField.getText());
-        Matrix4f translationMatrix = new Matrix4f(
-                1, 0, 0, Integer.parseInt(translationXField.getText()),
-                0, 1, 0, Integer.parseInt(translationYField.getText()),
-                0, 0, 1, Integer.parseInt(translationZField.getText()),
-                0, 0, 0, 1
-        );
-
-        Matrix4f rotationMatrixX = new Matrix4f(
-                1, 0, 0, 0,
-                0, (float)Math.cos(Math.toRadians(Float.parseFloat(rotationXField.getText()))), (float)-Math.sin(Math.toRadians(Float.parseFloat(rotationXField.getText()))), 0,
-                0, (float)Math.sin(Math.toRadians(Float.parseFloat(rotationXField.getText()))), (float)Math.cos(Math.toRadians(Float.parseFloat(rotationXField.getText()))), 0,
-                0, 0, 0, 1
-        );
-
-        Matrix4f rotationMatrixY = new Matrix4f(
-                (float)Math.cos(Math.toRadians(Float.parseFloat(rotationYField.getText()))), 0, (float)Math.sin(Math.toRadians(Float.parseFloat(rotationYField.getText()))), 0,
-                0, 1, 0, 0,
-                (float)-Math.sin(Math.toRadians(Float.parseFloat(rotationYField.getText()))), 0, (float)Math.cos(Math.toRadians(Float.parseFloat(rotationYField.getText()))), 0,
-                0, 0, 0, 1
-        );
-
-        Matrix4f rotationMatrixZ = new Matrix4f(
-                (float)Math.cos(Math.toRadians(Float.parseFloat(rotationZField.getText()))), (float)-Math.sin(Math.toRadians(Float.parseFloat(rotationZField.getText()))), 0, 0,
-                (float)Math.sin(Math.toRadians(Float.parseFloat(rotationZField.getText()))), (float)Math.cos(Math.toRadians(Float.parseFloat(rotationZField.getText()))), 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1
-        );
-
-        Matrix4f scaleMatrix = new Matrix4f(
-                Integer.parseInt(scaleXField.getText()), 0, 0, 0,
-                0, Integer.parseInt(scaleYField.getText()), 0, 0,
-                0, 0, Integer.parseInt(scaleZField.getText()), 0,
-                0, 0, 0, 1
-        );
-
-// Умножаем матрицы в нужном порядке (сначала масштабирование, затем вращение, затем трансляция)
-        Matrix4f modelMatrix = Matrix4f.multiply(scaleMatrix, Matrix4f.multiply(rotationMatrixX, Matrix4f.multiply(rotationMatrixY, Matrix4f.multiply(rotationMatrixZ, translationMatrix))));
-
-// Применяем полученную модельную матрицу к активной модели
-        TranslationModel.move(modelMatrix, activeModel());
-
-
     }
 
     private Model activeModel() {

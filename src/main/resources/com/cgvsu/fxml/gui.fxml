@@ -148,7 +148,7 @@
 
                         <VBox spacing="5">
                             <Button text="Удалить"/>
-                            <Button onAction="#transformModel" text="Transform Model"/>
+                            <Button fx:id="transformModel" text="Transform Model"/>
                             <Button text="Сбросить Трансформации"/>
                         </VBox>
                     </VBox>
