@@ -72,6 +72,8 @@
                                 </ScrollPane>
                                 <Button fx:id="addNewModelButton" text="Добавить новую" />
                                 <Button fx:id="deleteModelButton" text="Удалить Модель" />
+                                <Button fx:id="saveModelButton" text="Сохранить Модель" />
+                                <CheckBox fx:id="useTransformCheckBox" mnemonicParsing="false" text="Сохранить трансформированную" />
                                 <VBox prefHeight="200.0" prefWidth="100.0">
                                     <children>
                                         <CheckBox fx:id="drawPolygonMeshCheckBox" mnemonicParsing="false" text="Рисовать полигональную сетку" />
@@ -199,7 +201,7 @@
                         <VBox spacing="5">
                             <Button text="Удалить" />
                             <Button fx:id="transformModel" text="Transform Model" />
-                            <Button text="Сбросить Трансформации" />
+                            <Button fx:id="cancelTransformModel" text="Сбросить Трансформации" />
                         </VBox>
                     </VBox>
                 </TitledPane>

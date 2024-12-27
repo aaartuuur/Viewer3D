@@ -86,4 +86,12 @@ public class Vector2f implements Vector<Vector2f> {
         return Math.abs(x - other.x) < EPS
                 && Math.abs(y - other.y) < EPS;
     }
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
 }

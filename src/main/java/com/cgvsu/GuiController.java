@@ -1,9 +1,9 @@
 package com.cgvsu;
 
-import com.cgvsu.ation.Rasterization;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Model;
 import com.cgvsu.objreader.ObjReader;
+import com.cgvsu.objwriter.ObjWriter;
 import com.cgvsu.render_engine.Camera;
 import com.cgvsu.render_engine.Lamp;
 import com.cgvsu.render_engine.Parametrs;
@@ -13,8 +13,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TitledPane;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
@@ -60,6 +58,9 @@ public class GuiController {
     @FXML
     private CheckBox useLightingCheckBox;
 
+    @FXML
+    private CheckBox useTransformCheckBox;
+
     private List<Model> models = new ArrayList<>();
     private ObservableList<Model> modelObservableList;
     private Model activeModel;
@@ -78,6 +79,12 @@ public class GuiController {
 
     @FXML
     private Button transformModel;
+
+    @FXML
+    private Button cancelTransformModel;
+
+    @FXML
+    private Button saveModelButton;
 
     @FXML
     private TextField xCoordinateField;
@@ -125,6 +132,8 @@ public class GuiController {
     @FXML
     private TextField translationZField;
 
+    private boolean transformedModel;
+
     Camera activeCamera = new Camera(
             new Vector3f(0, 0, 120),
             new Vector3f(0, 0, 0),
@@ -168,8 +177,15 @@ public class GuiController {
             System.out.println("Использовать освещение: " + isNowSelected);
         });
 
+        useTransformCheckBox.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
+            if (useTransformCheckBox.isSelected()) {
+                transformedModel = true;
+            }
+        });
+
+
         brightnessSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            for (int i = 0; i < models.size(); i++) {
+            for (int i = 0; i < models.size(); i++){
                 parametrs.get(i).brightnessLamp = newValue.floatValue();
             }
         });
@@ -216,6 +232,7 @@ public class GuiController {
                 activeModel = newValue;
             }
         });
+
 
 
         addNewCameraButton.setOnAction(event -> {
@@ -267,6 +284,12 @@ public class GuiController {
             }
         });
 
+        saveModelButton.setOnAction(event -> {
+            saveModel();
+        });
+
+
+
 
         transformModel.setOnAction(event -> {
             try {
@@ -290,6 +313,38 @@ public class GuiController {
                 System.err.println("Ошибка: Введены некорректные данные. Убедитесь, что все поля содержат числа.");
             }
         });
+
+        cancelTransformModel.setOnAction(event -> {
+            rotationXField.setText("0");
+            rotationYField.setText("0");
+            rotationZField.setText("0");
+
+            scaleXField.setText("1");
+            scaleYField.setText("1");
+            scaleZField.setText("1");
+
+            translationXField.setText("0");
+            translationYField.setText("0");
+            translationZField.setText("0");
+
+            parametrs.get(models.indexOf(activeModel)).setRotationX(Float.parseFloat(rotationXField.getText()));
+            parametrs.get(models.indexOf(activeModel)).setRotationY(Float.parseFloat(rotationYField.getText()));
+            parametrs.get(models.indexOf(activeModel)).setRotationZ(Float.parseFloat(rotationZField.getText()));
+
+            parametrs.get(models.indexOf(activeModel)).setScaleX(Float.parseFloat(scaleXField.getText()));
+            parametrs.get(models.indexOf(activeModel)).setScaleY(Float.parseFloat(scaleYField.getText()));
+            parametrs.get(models.indexOf(activeModel)).setScaleZ(Float.parseFloat(scaleZField.getText()));
+
+            parametrs.get(models.indexOf(activeModel)).setTranslationX(Float.parseFloat(translationXField.getText()));
+            parametrs.get(models.indexOf(activeModel)).setTranslationY(Float.parseFloat(translationYField.getText()));
+            parametrs.get(models.indexOf(activeModel)).setTranslationZ(Float.parseFloat(translationZField.getText()));
+
+            System.out.println("Трансформации сброшены:");
+            System.out.println("Вращение: X=" + parametrs.get(models.indexOf(activeModel)).getRotationX() + ", Y=" + parametrs.get(models.indexOf(activeModel)).getRotationY() + ", Z=" + parametrs.get(models.indexOf(activeModel)).getRotationZ());
+            System.out.println("Масштабирование: X=" + parametrs.get(models.indexOf(activeModel)).getScaleX() + ", Y=" + parametrs.get(models.indexOf(activeModel)).getScaleY() + ", Z=" + parametrs.get(models.indexOf(activeModel)).getScaleZ());
+            System.out.println("Перемещение: X=" + parametrs.get(models.indexOf(activeModel)).getTranslationX() + ", Y=" + parametrs.get(models.indexOf(activeModel)).getTranslationY() + ", Z=" + parametrs.get(models.indexOf(activeModel)).getTranslationZ());
+        });
+
 
 
         anchorPane.prefWidthProperty().addListener((ov, oldValue, newValue) -> canvas.setWidth(newValue.doubleValue()));
@@ -499,6 +554,42 @@ public class GuiController {
         drawContent();
 
     }
+
+    private void saveModel() {
+        if (transformedModel) {
+            saveTransformModel();
+        }
+        saveBasicModel();
+    }
+
+    private void saveBasicModel() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
+        fileChooser.setTitle("Save Original Model");
+
+        File file = fileChooser.showSaveDialog((Stage) canvas.getScene().getWindow());
+        if (file == null) {
+            return;
+        }
+
+        String fileName = file.getAbsolutePath();
+        ObjWriter.write(activeModel, fileName);
+    }
+
+    private void saveTransformModel() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Model (*.obj)", "*.obj"));
+        fileChooser.setTitle("Save Original Model");
+
+        File file = fileChooser.showSaveDialog((Stage) canvas.getScene().getWindow());
+        if (file == null) {
+            return;
+        }
+
+        String fileName = file.getAbsolutePath();
+        ObjWriter.write(activeModel, fileName);
+    }
+
 
     @FXML
     private void onOpenModelMenuItemClick() {
