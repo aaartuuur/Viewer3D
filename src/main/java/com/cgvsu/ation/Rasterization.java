@@ -253,7 +253,7 @@ public class Rasterization {
         double greenLamp = 0;
         double blueLamp = 0;
         for (Lamp lamp : lightsVectors) {
-            Vector3f lightDirection = Vector3f.subtraction(lamp.coordinates, objectCoordinates); // поменять на координаты обЪекта
+            Vector3f lightDirection = Vector3f.subtraction(lamp.coordinates.reverse(), objectCoordinates.reverse()); // поменять на координаты обЪекта
 
 
             float lightIntensity = -1 * Vector3f.dotProduct(vectorLight, lightDirection.equals(new Vector3f()) ? new Vector3f(): lightDirection.normal());

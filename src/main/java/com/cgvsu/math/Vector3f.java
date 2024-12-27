@@ -37,6 +37,7 @@ public class Vector3f implements Vector<Vector3f> {
         return new Vector3f(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
     }
 
+
     @Override
     public final void sub(Vector3f var1, Vector3f var2) {
         this.x = var1.x - var2.x;
@@ -129,6 +130,9 @@ public class Vector3f implements Vector<Vector3f> {
         return new Vector3f(this.x, this.y, this.z);
     }
 
+    public Vector3f reverse(){
+        return new Vector3f(-this.x, -this.y, -this.z);
+    }
     @Override
     public boolean equals(final Vector3f other) {
         return Math.abs(x - other.x) < EPS

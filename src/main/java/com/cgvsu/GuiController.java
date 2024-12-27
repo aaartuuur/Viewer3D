@@ -169,7 +169,7 @@ public class GuiController {
         });
 
         brightnessSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            for (int i = 0; i < models.size(); i++){
+            for (int i = 0; i < models.size(); i++) {
                 parametrs.get(i).brightnessLamp = newValue.floatValue();
             }
         });
@@ -216,7 +216,6 @@ public class GuiController {
                 activeModel = newValue;
             }
         });
-
 
 
         addNewCameraButton.setOnAction(event -> {
@@ -267,7 +266,6 @@ public class GuiController {
                 alert.showAndWait();
             }
         });
-
 
 
         transformModel.setOnAction(event -> {

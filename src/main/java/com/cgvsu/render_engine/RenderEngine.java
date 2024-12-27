@@ -38,8 +38,8 @@ public class RenderEngine {
         modelViewProjectionMatrix = Matrix4f.multiply(modelViewProjectionMatrix, projectionMatrix);
 
         mesh.normals = FindNormals.findNormals(mesh);
-        Vector3f vertexCoordinate = new Vector3f(-1*parametrs.getTranslationX(),
-                -1*parametrs.getTranslationY(), -1*parametrs.getTranslationZ());
+        Vector3f vertexCoordinate = new Vector3f(parametrs.getTranslationX(),
+                parametrs.getTranslationY(), parametrs.getTranslationZ());
         final int nPolygons = mesh.polygons.size();
         for (int polygonInd = 0; polygonInd < nPolygons; ++polygonInd) {
             final int nVerticesInPolygon = mesh.polygons.get(polygonInd).getVertexIndices().size();
