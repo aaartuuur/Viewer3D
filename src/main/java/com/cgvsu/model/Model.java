@@ -13,4 +13,13 @@ public class Model {
     public ArrayList<Polygon> polygons = new ArrayList<Polygon>();
 
 
+    public Model copy() {
+        Model copy = new Model();
+
+        copy.vertices = new ArrayList<>(this.vertices);
+        copy.polygons = new ArrayList<>(this.polygons);
+
+
+        return copy;
+    }
 }

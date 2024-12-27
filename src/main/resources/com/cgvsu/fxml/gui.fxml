@@ -202,6 +202,15 @@
                             <Button text="Удалить" />
                             <Button fx:id="transformModel" text="Transform Model" />
                             <Button fx:id="cancelTransformModel" text="Сбросить Трансформации" />
+                            <HBox spacing="10" alignment="CENTER">
+                                <TextField fx:id="vertexIndicesField" promptText="Введите индексы вершин для удаления (например, 1,3,5)" />
+                                <Button text="Удалить вершины" onAction="#handleDeleteVertices" />
+                            </HBox>
+                            <Label text="Индексы полигонов для удаления (через запятую):" />
+                            <TextField fx:id="polygonIndicesField" promptText="Например: 2,5,7" />
+                            <!-- Кнопка для удаления полигонов -->
+                            <Button text="Удалить полигоны" onAction="#handleDeletePolygons" />
+                            <Button text="Отменить действие" onAction="#undo" />
                         </VBox>
                     </VBox>
                 </TitledPane>

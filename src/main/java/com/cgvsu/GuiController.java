@@ -1,7 +1,11 @@
 package com.cgvsu;
 
+import com.cgvsu.exception.ArrayListException;
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.model.DelPolygons;
+import com.cgvsu.model.DelVertices;
 import com.cgvsu.model.Model;
+import com.cgvsu.model.Polygon;
 import com.cgvsu.objreader.ObjReader;
 import com.cgvsu.objwriter.ObjWriter;
 import com.cgvsu.render_engine.Camera;
@@ -18,6 +22,8 @@ import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -31,6 +37,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 
 import static com.cgvsu.ation.Rasterization.holst;
 
@@ -60,6 +67,12 @@ public class GuiController {
 
     @FXML
     private CheckBox useTransformCheckBox;
+    @FXML
+    private TextField polygonIndicesField;
+    @FXML
+    private TextField verticesIndicesField;
+    @FXML
+    private TextField vertexIndicesField;
 
     private List<Model> models = new ArrayList<>();
     private ObservableList<Model> modelObservableList;
@@ -143,6 +156,21 @@ public class GuiController {
     private List<Camera> cameras = new ArrayList<>(List.of(activeCamera));
     private ObservableList<Camera> cameraObservableList;
     private List<Lamp> lights = new ArrayList<>();
+    private ArrayList<Vector3f> vertices;
+    private ArrayList<Polygon> polygons;
+    private Stack<Model> modelBackupStack = new Stack<>();
+    private void saveState() {
+        modelBackupStack.push(activeModel.copy());
+    }
+    @FXML
+    private void undo() {
+        if (!modelBackupStack.isEmpty()) {
+            activeModel = modelBackupStack.pop();
+            updateView();
+        } else {
+            showInfo("Нет действий для отмены");
+        }
+    }
 
     private Timeline timeline;
 
@@ -189,6 +217,7 @@ public class GuiController {
                 parametrs.get(i).brightnessLamp = newValue.floatValue();
             }
         });
+
 
         themeToggle.setOnAction(event -> {
             if (themeToggle.isSelected()) {
@@ -367,7 +396,9 @@ public class GuiController {
                 RenderEngine.render(canvas.getGraphicsContext2D(), activeCamera, mesh, (int) canvas.getWidth(), (int) canvas.getHeight(), parametrs.get(models.indexOf(mesh)), textureImage,
                         lights);
             }
+
         });
+
 
         timeline.getKeyFrames().add(frame);
         timeline.play();
@@ -375,6 +406,100 @@ public class GuiController {
         // Добавляем обработчики событий мыши
         canvas.setOnMouseMoved(event -> activeCamera.rotateCam(event.getX(), event.getY(), false));
         canvas.setOnMouseDragged(event -> activeCamera.rotateCam(event.getX(), event.getY(), event.isPrimaryButtonDown()));
+
+
+    }
+
+    @FXML
+    private void handleDeleteVertices() {
+
+        try {
+            String input = vertexIndicesField.getText();
+
+            ArrayList<Integer> indicesToDelete = parseIndices(input);
+
+            DelVertices.delVertices(indicesToDelete, activeModel.vertices, activeModel.polygons);
+
+            updateView();
+
+
+            showAlert(Alert.AlertType.INFORMATION, "Успех", "Вершины успешно удалены.");
+
+        } catch (ArrayListException e) {
+            // Обрабатываем исключения из DelVertices
+            showAlert(Alert.AlertType.ERROR, "Ошибка при удалении вершин", e.getMessage());
+        } catch (NumberFormatException e) {
+            // Обрабатываем неверный формат числа
+            showAlert(Alert.AlertType.ERROR, "Неверный ввод", "Пожалуйста, введите целые числа, разделенные запятыми.");
+        } catch (Exception e) {
+            // Обрабатываем любые другие исключения
+            showAlert(Alert.AlertType.ERROR, "Непредвиденная ошибка", e.getMessage());
+        }
+
+    }
+
+
+    private ArrayList<Integer> parseIndices(String input) throws NumberFormatException {
+        String[] tokens = input.split(",");
+        ArrayList<Integer> indices = new ArrayList<>();
+        for (String token : tokens) {
+            indices.add(Integer.parseInt(token.trim()));
+        }
+        return indices;
+    }
+
+    private void showAlert(Alert.AlertType alertType, String title, String message) {
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void updateView() {
+        //тут типа реализация
+
+    }
+    @FXML
+    private void handleDeletePolygons() {
+        try {
+            Model model = (activeModel);
+            if (model == null) {
+                showError("Модель не загружена");
+                return;
+            }
+
+            String inputText = polygonIndicesField.getText();
+            if (inputText.isEmpty()) {
+                showError("Пожалуйста, введите индексы полигонов для удаления");
+                return;
+            }
+
+            saveState();
+
+            // Используем существующий метод parseIndices
+            ArrayList<Integer> polygonIndicesToDelete = parseIndices(inputText);
+
+            DelPolygons.delPolygons(polygonIndicesToDelete, activeModel.polygons, activeModel.vertices);
+
+            updateView();
+
+            showInfo("Полигоны успешно удалены");
+
+        } catch (ArrayListException e) {
+            showError("Ошибка: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            showError("Некорректный формат ввода. Пожалуйста, введите целые числа, разделенные запятыми.");
+        } catch (Exception e) {
+            showError("Произошла ошибка при удалении полигонов: " + e.getMessage());
+        }
+    }
+
+    private void showInfo(String полигоныУспешноУдалены) {
+    }
+
+    private void showError(String Modelerr) {
+
     }
 
     private void loadDefaultModel() {
