@@ -1,5 +1,6 @@
 package com.cgvsu;
 
+import com.cgvsu.ation.Rasterization;
 import com.cgvsu.math.Vector3f;
 import com.cgvsu.model.Model;
 import com.cgvsu.objreader.ObjReader;
@@ -30,16 +31,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import static com.cgvsu.ation.Rasterization.holst;
 
 public class GuiController {
     final private float TRANSLATION = 1.5F;
     public ColorPicker colorPicker;
     public Slider brightnessSlider;
     public Button addNewModelButton;
-    public TextField xCoordinateModel;
-    public TextField yCoordinateModel;
-    public TextField zCoordinateModel;
+    public ListView<Model> modelListView;
+    public Button deleteModelButton;
 
     @FXML
     AnchorPane anchorPane;
@@ -58,11 +61,10 @@ public class GuiController {
     private CheckBox useLightingCheckBox;
 
     private List<Model> models = new ArrayList<>();
-    private int activeModelIndex = 0;
+    private ObservableList<Model> modelObservableList;
+    private Model activeModel;
 
     private Image textureImage;
-    @FXML
-    private TitledPane cameraTitledPane;
     @FXML
     private ListView<Camera> cameraListView;
     @FXML
@@ -128,24 +130,9 @@ public class GuiController {
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
 
-    Parametrs parametrs = new Parametrs(
-            false,  // drawPolygonMash
-            false,  // useTexture
-            true,   // useLighting
-            0.01F,  // brightnessLamp
-            0.0F,   // rotationX
-            0.0F,   // rotationY
-            0.0F,   // rotationZ
-            1.0F,   // scaleX
-            1.0F,   // scaleY
-            1.0F,   // scaleZ
-            0.0F,   // translationX
-            0.0F,   // translationY
-            0.0F    // translationZ
-    );
+    List<Parametrs> parametrs = new ArrayList<>();
     private List<Camera> cameras = new ArrayList<>(List.of(activeCamera));
     private ObservableList<Camera> cameraObservableList;
-    private Camera activecamera;
     private List<Lamp> lights = new ArrayList<>();
 
     private Timeline timeline;
@@ -153,6 +140,7 @@ public class GuiController {
 
     @FXML
     private void initialize() {
+        loadDefaultModel();
         colorPicker.setValue(javafx.scene.paint.Color.RED);
 
         drawPolygonMeshCheckBox.setSelected(false);
@@ -160,28 +148,30 @@ public class GuiController {
         useLightingCheckBox.setSelected(true);
 
         drawPolygonMeshCheckBox.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
-            parametrs.drawPolygonMash = isNowSelected;
+            parametrs.get(models.indexOf(activeModel)).drawPolygonMash = isNowSelected;
             System.out.println("Рисовать полигональную сетку: " + isNowSelected);
         });
 
         useTextureCheckBox.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
             if (textureImage == null && isNowSelected) {
                 useTextureCheckBox.setSelected(false);
-                parametrs.useTexture = false;
+                parametrs.get(models.indexOf(activeModel)).useTexture = false;
                 System.out.println("Текстура не загружена, галочка снята.");
             } else {
-                parametrs.useTexture = isNowSelected;
+                parametrs.get(models.indexOf(activeModel)).useTexture = isNowSelected;
                 System.out.println("Использовать текстуру: " + isNowSelected);
             }
         });
 
         useLightingCheckBox.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
-            parametrs.useLighting = isNowSelected;
+            parametrs.get(models.indexOf(activeModel)).useLighting = isNowSelected;
             System.out.println("Использовать освещение: " + isNowSelected);
         });
 
         brightnessSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            parametrs.brightnessLamp = newValue.floatValue();
+            for (int i = 0; i < models.size(); i++){
+                parametrs.get(i).brightnessLamp = newValue.floatValue();
+            }
         });
 
         themeToggle.setOnAction(event -> {
@@ -212,6 +202,22 @@ public class GuiController {
             }
         });
 
+        if (activeModel == null && !models.isEmpty()) {
+            activeModel = models.get(0);
+        }
+        modelObservableList = FXCollections.observableArrayList(models);
+
+        modelListView.getSelectionModel().select(activeModel);
+
+        modelListView.setItems(modelObservableList);
+
+        modelListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                activeModel = newValue;
+            }
+        });
+
+
 
         addNewCameraButton.setOnAction(event -> {
             addNewCamera();
@@ -241,25 +247,47 @@ public class GuiController {
                 alert.showAndWait();
             }
         });
+        deleteModelButton.setOnAction(event -> {
+            Model selectModel = modelListView.getSelectionModel().getSelectedItem();
+            if (selectModel != null) {
+                parametrs.remove(models.indexOf(selectModel));
+                models.remove(selectModel); // Удаляем из исходного списка
+                modelObservableList.remove(selectModel); // Удаляем из ObservableList
+                if (!modelObservableList.isEmpty()) {
+                    activeModel = modelObservableList.get(0); // Установка первой камеры как активной
+                    modelListView.getSelectionModel().select(0);
+                } else {
+                    activeModel = null; // Нет камер
+                }
+            } else {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Удаление камеры");
+                alert.setHeaderText(null);
+                alert.setContentText("Нет выбранной камеры для удаления.");
+                alert.showAndWait();
+            }
+        });
+
+
 
         transformModel.setOnAction(event -> {
             try {
-                parametrs.setRotationX(Float.parseFloat(rotationXField.getText()));
-                parametrs.setRotationY(Float.parseFloat(rotationYField.getText()));
-                parametrs.setRotationZ(Float.parseFloat(rotationZField.getText()));
+                parametrs.get(models.indexOf(activeModel)).setRotationX(Float.parseFloat(rotationXField.getText()));
+                parametrs.get(models.indexOf(activeModel)).setRotationY(Float.parseFloat(rotationYField.getText()));
+                parametrs.get(models.indexOf(activeModel)).setRotationZ(Float.parseFloat(rotationZField.getText()));
 
-                parametrs.setScaleX(Float.parseFloat(scaleXField.getText()));
-                parametrs.setScaleY(Float.parseFloat(scaleYField.getText()));
-                parametrs.setScaleZ(Float.parseFloat(scaleZField.getText()));
+                parametrs.get(models.indexOf(activeModel)).setScaleX(Float.parseFloat(scaleXField.getText()));
+                parametrs.get(models.indexOf(activeModel)).setScaleY(Float.parseFloat(scaleYField.getText()));
+                parametrs.get(models.indexOf(activeModel)).setScaleZ(Float.parseFloat(scaleZField.getText()));
 
-                parametrs.setTranslationX(Float.parseFloat(translationXField.getText()));
-                parametrs.setTranslationY(Float.parseFloat(translationYField.getText()));
-                parametrs.setTranslationZ(Float.parseFloat(translationZField.getText()));
+                parametrs.get(models.indexOf(activeModel)).setTranslationX(Float.parseFloat(translationXField.getText()));
+                parametrs.get(models.indexOf(activeModel)).setTranslationY(Float.parseFloat(translationYField.getText()));
+                parametrs.get(models.indexOf(activeModel)).setTranslationZ(Float.parseFloat(translationZField.getText()));
 
                 System.out.println("Параметры обновлены:");
-                System.out.println("Вращение: X=" + parametrs.getRotationX() + ", Y=" + parametrs.getRotationY() + ", Z=" + parametrs.getRotationZ());
-                System.out.println("Масштабирование: X=" + parametrs.getScaleX() + ", Y=" + parametrs.getScaleY() + ", Z=" + parametrs.getScaleZ());
-                System.out.println("Перемещение: X=" + parametrs.getTranslationX() + ", Y=" + parametrs.getTranslationY() + ", Z=" + parametrs.getTranslationZ());
+                System.out.println("Вращение: X=" + parametrs.get(models.indexOf(activeModel)).getRotationX() + ", Y=" + parametrs.get(models.indexOf(activeModel)).getRotationY() + ", Z=" + parametrs.get(models.indexOf(activeModel)).getRotationZ());
+                System.out.println("Масштабирование: X=" + parametrs.get(models.indexOf(activeModel)).getScaleX() + ", Y=" + parametrs.get(models.indexOf(activeModel)).getScaleY() + ", Z=" + parametrs.get(models.indexOf(activeModel)).getScaleZ());
+                System.out.println("Перемещение: X=" + parametrs.get(models.indexOf(activeModel)).getTranslationX() + ", Y=" + parametrs.get(models.indexOf(activeModel)).getTranslationY() + ", Z=" + parametrs.get(models.indexOf(activeModel)).getTranslationZ());
             } catch (NumberFormatException e) {
                 System.err.println("Ошибка: Введены некорректные данные. Убедитесь, что все поля содержат числа.");
             }
@@ -278,9 +306,12 @@ public class GuiController {
 
             canvas.getGraphicsContext2D().clearRect(0, 0, width, height);
             activeCamera.setAspectRatio((float) (width / height));
-
+            holst = new float[(int) canvas.getHeight()][(int) canvas.getWidth()];
+            for (int i = 0; i < holst.length; i++) {
+                Arrays.fill(holst[i], Float.MAX_VALUE);
+            }
             for (Model mesh : models) {
-                RenderEngine.render(canvas.getGraphicsContext2D(), activeCamera, mesh, (int) canvas.getWidth(), (int) canvas.getHeight(), parametrs, textureImage,
+                RenderEngine.render(canvas.getGraphicsContext2D(), activeCamera, mesh, (int) canvas.getWidth(), (int) canvas.getHeight(), parametrs.get(models.indexOf(mesh)), textureImage,
                         lights);
             }
         });
@@ -291,8 +322,6 @@ public class GuiController {
         // Добавляем обработчики событий мыши
         canvas.setOnMouseMoved(event -> activeCamera.rotateCam(event.getX(), event.getY(), false));
         canvas.setOnMouseDragged(event -> activeCamera.rotateCam(event.getX(), event.getY(), event.isPrimaryButtonDown()));
-
-        loadDefaultModel();
     }
 
     private void loadDefaultModel() {
@@ -301,7 +330,24 @@ public class GuiController {
         try {
             Path fileName = Path.of(filePath);
             String fileContent = Files.readString(fileName);
-            models.add(ObjReader.read(fileContent));
+            Model model = ObjReader.read(fileContent);
+            models.add(model); // Добавляем модель в список
+            activeModel = model; // Устанавливаем activeModel
+            parametrs.add(new Parametrs(
+                    false,  // drawPolygonMash
+                    false,  // useTexture
+                    true,   // useLighting
+                    0.01F,  // brightnessLamp
+                    0.0F,   // rotationX
+                    0.0F,   // rotationY
+                    0.0F,   // rotationZ
+                    1.0F,   // scaleX
+                    1.0F,   // scaleY
+                    1.0F,   // scaleZ
+                    0.0F,   // translationX
+                    0.0F,   // translationY
+                    0.0F    // translationZ
+            ));
             System.out.println("Model loaded successfully from: " + filePath);
         } catch (IOException exception) {
             System.err.println("Error loading model from path: " + filePath);
@@ -348,9 +394,56 @@ public class GuiController {
 
         try {
             String fileContent = Files.readString(fileName);
-            models.add(ObjReader.read(fileContent));
-            System.out.println("Model loaded successfully from: " + file);
+            Model model = ObjReader.read(fileContent);
+            models.add(model); // Добавляем модель в список
+            activeModel = model; // Обновляем activeModel
+            modelObservableList.add(model);
 
+            // Добавляем параметры для новой модели
+            Parametrs defaultParams = new Parametrs(
+                    false,  // drawPolygonMash
+                    false,  // useTexture
+                    true,   // useLighting
+                    0.01F,  // brightnessLamp
+                    0.0F,   // rotationX
+                    0.0F,   // rotationY
+                    0.0F,   // rotationZ
+                    1.0F,   // scaleX
+                    1.0F,   // scaleY
+                    1.0F,   // scaleZ
+                    0.0F,   // translationX
+                    0.0F,   // translationY
+                    0.0F    // translationZ
+            );
+            parametrs.add(defaultParams);
+
+            // Заполняем параметры на экране значениями по умолчанию
+            rotationXField.setText("0.0");
+            rotationYField.setText("0.0");
+            rotationZField.setText("0.0");
+
+            scaleXField.setText("1.0");
+            scaleYField.setText("1.0");
+            scaleZField.setText("1.0");
+
+            translationXField.setText("0.0");
+            translationYField.setText("0.0");
+            translationZField.setText("0.0");
+
+            xCoordinateLight.setText("0.0");
+            yCoordinateLight.setText("0.0");
+            zCoordinateLight.setText("0.0");
+
+            dirXField.setText("0.0");
+            dirYField.setText("0.0");
+            dirZField.setText("0.0");
+
+            drawPolygonMeshCheckBox.setSelected(defaultParams.drawPolygonMash);
+            useTextureCheckBox.setSelected(defaultParams.useTexture);
+            useLightingCheckBox.setSelected(defaultParams.useLighting);
+            brightnessSlider.setValue(defaultParams.brightnessLamp);
+
+            System.out.println("Model loaded successfully from: " + file);
         } catch (IOException exception) {
             exception.printStackTrace();
         }
@@ -489,23 +582,17 @@ public class GuiController {
     @FXML
     public void Q(ActionEvent actionEvent) {
         activeCamera = cameras.get(cameras.indexOf(activeCamera) + 1 >= cameras.size() ? 0 : cameras.indexOf(activeCamera) + 1);
-
+        holst = new float[(int) canvas.getHeight()][(int) canvas.getWidth()];
+        for (int i = 0; i < holst.length; i++) {
+            Arrays.fill(holst[i], Float.MAX_VALUE);
+        }
         for (Model mesh : models) {
             RenderEngine.render(canvas.getGraphicsContext2D(), activeCamera,
                     mesh, (int) canvas.getWidth(), (int) canvas.getHeight(),
-                    parametrs,
+                    parametrs.get(models.indexOf(mesh)),
                     textureImage,
                     lights);
         }
-    }
-
-    private Model activeModel() {
-        for (Model mesh : models) {
-            if (mesh.isActive) {
-                return mesh;
-            }
-        }
-        return models.get(0);
     }
 
 

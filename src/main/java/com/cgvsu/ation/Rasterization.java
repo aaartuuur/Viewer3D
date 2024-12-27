@@ -19,18 +19,11 @@ public class Rasterization {
     static List<Lamp> lightsVectors;
     static Vector3f ray;
     static final double k = 0.6;
-    static float[][] holst;//zbuf
+    public static float[][] holst;
 
     public Rasterization(Vector3f camera, List<Lamp> lights) {
-        Screen screen = Screen.getPrimary();
-        int width = (int) screen.getBounds().getWidth();
-        int height = (int) screen.getBounds().getHeight();
-        holst = new float[height][width];
         ray = camera.clone();
         lightsVectors = lights;
-        for (int i = 0; i < holst.length; i++) {
-            Arrays.fill(holst[i], Float.MAX_VALUE);
-        }
     }
 
     public static void drawLine(
@@ -108,7 +101,8 @@ public class Rasterization {
             float[] vertexsZBuf,
             Image textureImage,
             Vector2f[] textureCoords,
-            Parametrs parametrs) {
+            Parametrs parametrs,
+            Vector3f vertexCoordinates) {
 
         final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
         final PixelReader pixelReader = textureImage == null ? null : textureImage.getPixelReader();
@@ -139,9 +133,11 @@ public class Rasterization {
                         yt = (int) Math.max(0, Math.min(textureImage.getHeight() - 1, yt));
 
                         Color textureColor = pixelReader.getColor(xt, yt);
-                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, textureColor, normals, parametrs.brightnessLamp));
+                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, textureColor, normals,
+                                parametrs.brightnessLamp, vertexCoordinates));
                     }else {
-                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals, parametrs.brightnessLamp));
+                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals,
+                                parametrs.brightnessLamp, vertexCoordinates));
                     }
                 }
             }
@@ -170,9 +166,11 @@ public class Rasterization {
                         yt = (int) Math.max(0, Math.min(textureImage.getHeight() - 1, yt));
 
                         Color textureColor = pixelReader.getColor(xt, yt);
-                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, textureColor, normals, parametrs.brightnessLamp));
+                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, textureColor, normals,
+                                parametrs.brightnessLamp, vertexCoordinates));
                     }else {
-                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals, parametrs.brightnessLamp));
+                        pixelWriter.setColor(x, y, getColor(barizenticCoordinate, colors, normals,
+                                parametrs.brightnessLamp, vertexCoordinates));
                     }
                 }
             }
@@ -210,12 +208,6 @@ public class Rasterization {
         return false;
     }
 
-    private static float determinator(int[][] arr) {
-        return arr[0][0] * arr[1][1] * arr[2][2] + arr[1][0] * arr[0][2] * arr[2][1] +
-                arr[0][1] * arr[1][2] * arr[2][0] - arr[0][2] * arr[1][1] * arr[2][0] -
-                arr[0][0] * arr[1][2] * arr[2][1] - arr[0][1] * arr[1][0] * arr[2][2];
-    }
-
     private static float[] barycentricCalculator(int x, int y, int[] arrX, int[] arrY) {
         float v0x = arrX[2] - arrX[0];
         float v0y = arrY[2] - arrY[0];
@@ -240,7 +232,7 @@ public class Rasterization {
         return new float[]{w, v, u};
     }
 
-    private static Color getColor(float[] barycentricCoords, Color[] colors, Vector3f[] normals, float brightness) {
+    private static Color getColor(float[] barycentricCoords, Color[] colors, Vector3f[] normals, float brightness, Vector3f objectCoordinates) {
         Vector3f vectorLight = normals[0].multiply(barycentricCoords[0]);
         vectorLight.add(normals[1].multiply(barycentricCoords[1]));
         vectorLight.add(normals[2].multiply(barycentricCoords[2]));
@@ -261,11 +253,10 @@ public class Rasterization {
         double greenLamp = 0;
         double blueLamp = 0;
         for (Lamp lamp : lightsVectors) {
-            Vector3f lightDirection = Vector3f.subtraction(lamp.coordinates, new Vector3f(0, 0, 0)); // поменять на координаты обЪекта
+            Vector3f lightDirection = Vector3f.subtraction(lamp.coordinates, objectCoordinates); // поменять на координаты обЪекта
 
 
-            float lightIntensity = -1 * Vector3f.dotProduct(vectorLight, lightDirection.equals(new Vector3f()) ? new Vector3f(): lightDirection.normal()); // Интенсивность света
-
+            float lightIntensity = -1 * Vector3f.dotProduct(vectorLight, lightDirection.equals(new Vector3f()) ? new Vector3f(): lightDirection.normal());
             redLamp = Math.max(lamp.color.getRed() * lightIntensity, redLamp);
             greenLamp = Math.max(lamp.color.getGreen() * lightIntensity, greenLamp);
             blueLamp = Math.max(lamp.color.getBlue() * lightIntensity, blueLamp);
@@ -277,7 +268,7 @@ public class Rasterization {
                 1);
     }
 
-    private static Color getColor(float[] barycentricCoords, Color color, Vector3f[] normals, float brightness) {
+    private static Color getColor(float[] barycentricCoords, Color color, Vector3f[] normals, float brightness, Vector3f objectCoordinates) {
         Vector3f vectorLight = normals[0].multiply(barycentricCoords[0]);
         vectorLight.add(normals[1].multiply(barycentricCoords[1]));
         vectorLight.add(normals[2].multiply(barycentricCoords[2]));
@@ -288,7 +279,7 @@ public class Rasterization {
         double greenLamp = 0;
         double blueLamp = 0;
         for (Lamp lamp : lightsVectors) {
-            Vector3f lightDirection = Vector3f.subtraction(lamp.coordinates, new Vector3f(0, 0, 0)); // поменять на координаты обЪекта
+            Vector3f lightDirection = Vector3f.subtraction(lamp.coordinates, objectCoordinates); // поменять на координаты обЪекта
 
 
             float lightIntensity = -1 * Vector3f.dotProduct(vectorLight, lightDirection.equals(new Vector3f()) ? new Vector3f(): lightDirection.normal()); // Интенсивность света

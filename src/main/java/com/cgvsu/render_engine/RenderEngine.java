@@ -38,7 +38,8 @@ public class RenderEngine {
         modelViewProjectionMatrix = Matrix4f.multiply(modelViewProjectionMatrix, projectionMatrix);
 
         mesh.normals = FindNormals.findNormals(mesh);
-
+        Vector3f vertexCoordinate = new Vector3f(-1*parametrs.getTranslationX(),
+                -1*parametrs.getTranslationY(), -1*parametrs.getTranslationZ());
         final int nPolygons = mesh.polygons.size();
         for (int polygonInd = 0; polygonInd < nPolygons; ++polygonInd) {
             final int nVerticesInPolygon = mesh.polygons.get(polygonInd).getVertexIndices().size();
@@ -46,11 +47,15 @@ public class RenderEngine {
             float[] zVertexs = new float[nVerticesInPolygon];
             int[] numVertexs = new int[nVerticesInPolygon];
             Vector2f[] textureCoords = new Vector2f[nVerticesInPolygon];
+            Vector3f[] vertices = new Vector3f[nVerticesInPolygon];
             for (int vertexInPolygonInd = 0; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
                 int tek = mesh.polygons.get(polygonInd).getVertexIndices().get(vertexInPolygonInd);
                 numVertexs[vertexInPolygonInd] = tek;
-                Vector3f vertex = mesh.vertices.get(tek);
-                Vector3f vertexVecmath = new Vector3f(vertex.x, vertex.y, vertex.z);
+                vertices[vertexInPolygonInd] = mesh.vertices.get(tek); // Сохраняем координаты вершины
+            }
+
+            for (int vertexInPolygonInd = 0; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
+                Vector3f vertexVecmath = new Vector3f(vertices[vertexInPolygonInd].x, vertices[vertexInPolygonInd].y, vertices[vertexInPolygonInd].z);
                 Vector3f Vecmath = multiplyMatrix4ByVector3(modelViewProjectionMatrix, vertexVecmath);
                 Point2f resultPoint = vertexToPoint(Vecmath, width, height);
                 zVertexs[vertexInPolygonInd] = Vecmath.z;
@@ -58,6 +63,7 @@ public class RenderEngine {
                 textureCoords[vertexInPolygonInd] = mesh.textureVertices.get(
                         mesh.polygons.get(polygonInd).getTextureVertexIndices().get(vertexInPolygonInd));
             }
+
             if(parametrs.drawPolygonMash) {
                 for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
                     Rasterization.drawLine(
@@ -94,13 +100,18 @@ public class RenderEngine {
                             new float[]{zVertexs[triangl[0]], zVertexs[triangl[1]], zVertexs[triangl[2]]},
                             textureImage,
                             new Vector2f[]{textureCoords[triangl[0]], textureCoords[triangl[1]], textureCoords[triangl[2]]},
-                            parametrs);
+                            parametrs, vertexCoordinate);
                 }
             } else {
                 Vector3f[] normals = new Vector3f[3];
                 normals[0] = (mesh.normals.get(0));
                 normals[1] = (mesh.normals.get(1));
                 normals[2] = (mesh.normals.get(2));
+
+                Vector3f[] vertexCoordinates = new Vector3f[3];
+                vertexCoordinates[0] = mesh.vertices.get(0);
+                vertexCoordinates[1] = mesh.vertices.get(1);
+                vertexCoordinates[2] = mesh.vertices.get(2);
                 Rasterization.fillTriangle(graphicsContext,
                         new int[]{(int) resultPoints.get(0).x, (int) resultPoints.get(1).x, (int) resultPoints.get(2).x},
                         new int[]{(int) resultPoints.get(0).y, (int) resultPoints.get(1).y, (int) resultPoints.get(2).y},
@@ -109,7 +120,7 @@ public class RenderEngine {
                         new float[]{zVertexs[0], zVertexs[1], zVertexs[2]},
                         textureImage,
                         new Vector2f[]{textureCoords[0], textureCoords[1], textureCoords[2]},
-                        parametrs);
+                        parametrs, vertexCoordinate);
             }
 
         }

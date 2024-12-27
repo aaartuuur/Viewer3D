@@ -29,7 +29,6 @@
         <menus>
             <Menu mnemonicParsing="false" text="File">
                 <MenuItem mnemonicParsing="false" text="Сохранить модель" />
-                <MenuItem accelerator="Ctrl+F" mnemonicParsing="false" onAction="#onOpenModelMenuItemClick" text="Загрузить модель" />
                 <MenuItem accelerator="Ctrl+T" mnemonicParsing="false" onAction="#onLoadTextureMenuItemClick" text="Загрузить тексутуру" />
             </Menu>
             <Menu mnemonicParsing="false" text="Camera Options">
@@ -65,8 +64,14 @@
                     <content>
                         <VBox prefHeight="100.0" prefWidth="100.0">
                             <children>
+                                <ScrollPane prefHeight="200.0" prefWidth="200.0" minHeight="60">
+                                    <content>
+
+                                        <ListView fx:id="modelListView" prefHeight="200" />
+                                    </content>
+                                </ScrollPane>
                                 <Button fx:id="addNewModelButton" text="Добавить новую" />
-                                <Button text="Удалить Модель" />
+                                <Button fx:id="deleteModelButton" text="Удалить Модель" />
                                 <VBox prefHeight="200.0" prefWidth="100.0">
                                     <children>
                                         <CheckBox fx:id="drawPolygonMeshCheckBox" mnemonicParsing="false" text="Рисовать полигональную сетку" />
@@ -82,7 +87,6 @@
                     <content>
                         <VBox prefHeight="100.0" prefWidth="100.0">
                             <children>
-                        <ScrollPane prefHeight="200.0" prefWidth="200.0" />
 
                                       <HBox alignment="CENTER_LEFT">
                                     <Label text="Координаты:" />
@@ -100,7 +104,7 @@
 
                                 <Button fx:id="addNewCameraButton" text="Добавить Новую Камеру" />
                                 <Button fx:id="deleteCameraButton" text="Удалить Камеру" />
-                        <ScrollPane prefHeight="200.0" prefWidth="200.0">
+                        <ScrollPane prefHeight="200.0" prefWidth="200.0" minHeight="60">
                            <content>
       
                                             <ListView fx:id="cameraListView" prefHeight="200" />
